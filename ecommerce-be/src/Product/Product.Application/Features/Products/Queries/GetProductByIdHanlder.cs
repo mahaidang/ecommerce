@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Product.Application.Abstractions.Persistence;
 using Mapster;
+using Product.Application.Features.Products.Dtos;
 
 namespace Product.Application.Features.Products.Queries;
 
@@ -19,6 +20,14 @@ public class GetProductByIdHanlder : IRequestHandler<GetProductByIdQuery, Produc
         var product = await _prods.GetByIdAsync(id, ct);
         if (product is null)
             throw new InvalidOperationException($"Product with id '{id}' not found.");
-        return product.Adapt<ProductDto>();
+
+        var mainImage = product.Images?
+            .Where(m => m.IsMain)
+            .Select(m => m.Adapt<ProductImageDto>())
+            .FirstOrDefault();
+
+        var res = product.Adapt<ProductDto>() with { MainImage = mainImage };
+
+        return res;
     }
 }

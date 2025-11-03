@@ -6,10 +6,10 @@ namespace Basket.Application.Features.Baskets.Commands.UpsertItem;
 
 public sealed record SaveItemCommand(SaveBasketDto dto) : IRequest<Domain.Entities.Basket>;
 
-public class SaveItemCommandHandler : IRequestHandler<SaveItemCommand, Domain.Entities.Basket>
+public class SaveItemHandler : IRequestHandler<SaveItemCommand, Domain.Entities.Basket>
 {
     private readonly IBasketRepository _repo;
-    public SaveItemCommandHandler(IBasketRepository repo) => _repo = repo;
+    public SaveItemHandler(IBasketRepository repo) => _repo = repo;
     public async Task<Domain.Entities.Basket> Handle(SaveItemCommand c, CancellationToken ct)
     {
         string key;

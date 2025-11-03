@@ -1,12 +1,11 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Basket.Application.DependencyInjection;
+using Basket.Application.Features.Baskets.Commands.UpsertItem;
 using Basket.Infrastructure.DependencyInjection;
-using Basket.Application.Features.Baskets.Queries;
 using Basket.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
-using Basket.Application.Features.Baskets.Commands.UpsertItem;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,7 +47,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer
 builder.Services.AddScoped<Basket.Application.Abstractions.Persistence.IBasketRepository, RedisBasketRepository>();
 
 // Đăng ký MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<SaveItemCommandHandler>());
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<SaveItemHandler>());
 
  
 

@@ -2,6 +2,8 @@
 using Basket.Application.Features.Baskets.Commands.Delete;
 using Basket.Application.Features.Baskets.Commands.UpsertItem;
 using Basket.Application.Features.Baskets.Dtos;
+using Basket.Application.Features.Baskets.Queries;
+using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,13 +21,16 @@ public class BasketsController : ControllerBase
         _ttl = TimeSpan.FromMinutes(minutes);
     }
 
-    ////get by id
-    //[HttpGet("{userId:guid}")]
-    //public async Task<IActionResult> Get(Guid userId, CancellationToken ct)
-    //{
-    //    var b = await _sender.Send(new GetBasketQuery(userId), ct);
-    //    return Ok(b);
-    //}
+    //get by id
+    [HttpGet]
+    public async Task<IActionResult> Get(
+        [FromQuery] Guid? userId,
+        [FromQuery] string? sessionId,
+        CancellationToken ct)
+    {
+        var b = await _sender.Send(new GetBasketQuery(userId, sessionId), ct);
+        return Ok(b);
+    }
 
     //post items
     [HttpPost]
@@ -39,18 +44,26 @@ public class BasketsController : ControllerBase
         return Ok(b);
     }
 
-    //edit
-    [HttpPatch("{userId:guid}/items/{productId:guid}")]
+    //update quantity
+    [HttpPatch]
     public async Task<IActionResult> UpdateQty(
         [FromQuery] Guid? userId,
         [FromQuery] string? sessionId,
         [FromBody] SaveItemRequest req,
         CancellationToken ct)
     {
-        var b = await _sender.Send(new UpdateQtyCommand(userId, productId, req.Quantity, _ttl), ct);
-        return Ok(b));
+        var b = await _sender.Send(new UpdateQtyCommand(new SaveBasketDto(userId, sessionId, req.ProductId, req.Quantity)), ct);
+        return Ok(b);
     }
 
+    //update basket
+    [HttpPut("update-all")]
+    public async Task<IActionResult> UpdateAll([FromBody] UpdateBasketRequest request, CancellationToken ct)
+    {
+        var dto = request.Adapt<UpdateBasketDto>();
+        var rs = await _sender.Send(new UpdateBasketCommand(dto), ct);
+        return Ok(new { message = "Basket updated successfully" });
+    }
     //delete product
     [HttpDelete("{userId:guid}/items/{productId:guid}")]
     public async Task<IActionResult> RemoveItem(Guid userId, Guid productId, CancellationToken ct)

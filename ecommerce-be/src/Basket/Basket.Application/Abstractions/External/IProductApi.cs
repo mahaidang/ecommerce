@@ -16,5 +16,13 @@ public record ProductDto(
     Guid Id,
     string Name,
     decimal Price,
-    string ImageUrl
+    ProductImageDto? MainImage
 );
+
+public class ProductImageDto
+{
+    public string Url { get; set; } = string.Empty;
+    public string PublicId { get; set; } = string.Empty;
+    public bool IsMain { get; set; }
+    public string? Alt { get; set; }
+}
