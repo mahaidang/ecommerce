@@ -1,4 +1,4 @@
-﻿namespace BasketService.Application.Abstractions.External;
+﻿namespace Basket.Application.Abstractions.External;
 
 public interface IProductCatalogClient
 {

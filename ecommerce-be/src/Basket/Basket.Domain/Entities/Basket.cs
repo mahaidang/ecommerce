@@ -1,8 +1,13 @@
-﻿namespace BasketService.Domain.Entities;
+﻿namespace Basket.Domain.Entities;
 
 public class Basket
 {
-    public Guid UserId { get; set; }                 // khoá chính giỏ = UserId
+    // UserId có thể null nếu là guest
+    public Guid? UserId { get; set; }
+
+    // SessionId dành cho khách vãng lai
+    public string? SessionId { get; set; }
+
     public List<BasketItem> Items { get; set; } = new();
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }

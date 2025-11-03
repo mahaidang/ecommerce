@@ -1,4 +1,3 @@
-﻿namespace BasketService.Api.Contracts;
+﻿namespace Basket.Api.Contracts;
 
-public sealed record UpsertItemRequest(Guid ProductId, string Sku, string Name,
-                                      decimal UnitPrice, int Quantity, string Currency);
+public sealed record SaveItemRequest(Guid ProductId, int Quantity);
