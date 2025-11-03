@@ -2,10 +2,11 @@
 using Autofac.Extensions.DependencyInjection;
 using Basket.Application.DependencyInjection;
 using Basket.Infrastructure.DependencyInjection;
-using BasketService.Application.Features.Baskets.Queries;
-using BasketService.Infrastructure.Persistence;
+using Basket.Application.Features.Baskets.Queries;
+using Basket.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using Basket.Application.Features.Baskets.Commands.UpsertItem;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,13 +31,13 @@ builder.Services.AddSwaggerGen(o =>
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 
-builder.Services.AddHttpClient("ProductApi", (sp, c) =>
-{
-    var cfg = sp.GetRequiredService<IConfiguration>();
-    var baseUrl = cfg["Services:ProductBaseUrl"]!;
-    c.BaseAddress = new Uri(baseUrl);
-    c.Timeout = TimeSpan.FromSeconds(5);
-});
+//builder.Services.AddHttpClient("ProductApi", (sp, c) =>
+//{
+//    var cfg = sp.GetRequiredService<IConfiguration>();
+//    var baseUrl = cfg["Services:ProductBaseUrl"]!;
+//    c.BaseAddress = new Uri(baseUrl);
+//    c.Timeout = TimeSpan.FromSeconds(5);
+//});
 
 
 // Redis
@@ -44,10 +45,10 @@ var redisConn = builder.Configuration["Redis:ConnectionString"]!;
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConn));
 
 // Repo
-builder.Services.AddScoped<BasketService.Application.Abstractions.Persistence.IBasketRepository, RedisBasketRepository>();
+builder.Services.AddScoped<Basket.Application.Abstractions.Persistence.IBasketRepository, RedisBasketRepository>();
 
 // Đăng ký MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetBasketHandler>());
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<SaveItemCommandHandler>());
 
  
 

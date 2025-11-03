@@ -1,7 +1,7 @@
-﻿using BasketService.Api.Contracts;
-using BasketService.Application.Features.Baskets.Commands.Delete;
-using BasketService.Application.Features.Baskets.Commands.UpsertItem;
-using BasketService.Application.Features.Baskets.Queries;
+﻿using Basket.Api.Contracts;
+using Basket.Application.Features.Baskets.Commands.Delete;
+using Basket.Application.Features.Baskets.Commands.UpsertItem;
+using Basket.Application.Features.Baskets.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,29 +19,36 @@ public class BasketsController : ControllerBase
         _ttl = TimeSpan.FromMinutes(minutes);
     }
 
-    //get by id
-    [HttpGet("{userId:guid}")]
-    public async Task<IActionResult> Get(Guid userId, CancellationToken ct)
-    {
-        var b = await _sender.Send(new GetBasketQuery(userId), ct);
-        return Ok(b);
-    }
+    ////get by id
+    //[HttpGet("{userId:guid}")]
+    //public async Task<IActionResult> Get(Guid userId, CancellationToken ct)
+    //{
+    //    var b = await _sender.Send(new GetBasketQuery(userId), ct);
+    //    return Ok(b);
+    //}
 
     //post items
-    [HttpPost("{userId:guid}/items")]
-    public async Task<IActionResult> UpsertItem(Guid userId, UpsertItemRequest req, CancellationToken ct)
+    [HttpPost]
+    public async Task<IActionResult> SaveItem(
+        [FromQuery] Guid? userId, 
+        [FromQuery] string? sessionId, 
+        [FromBody] SaveItemRequest req, 
+        CancellationToken ct)
     {
-        var b = await _sender.Send(new UpsertItemCommand(
-            userId, req.ProductId, req.Sku, req.Name, req.UnitPrice, req.Quantity, req.Currency, _ttl), ct);
-        return Ok(Map(b));
+        var b = await _sender.Send(new SaveItemCommand(new SaveBasketDto(userId, sessionId, req.ProductId, req.Quantity)), ct);
+        return Ok(b);
     }
 
     //edit
     [HttpPatch("{userId:guid}/items/{productId:guid}")]
-    public async Task<IActionResult> UpdateQty(Guid userId, Guid productId, UpdateQtyRequest req, CancellationToken ct)
+    public async Task<IActionResult> UpdateQty(
+        [FromQuery] Guid? userId,
+        [FromQuery] string? sessionId,
+        [FromBody] SaveItemRequest req,
+        CancellationToken ct)
     {
         var b = await _sender.Send(new UpdateQtyCommand(userId, productId, req.Quantity, _ttl), ct);
-        return Ok(Map(b));
+        return Ok(b));
     }
 
     //delete product
@@ -64,14 +71,14 @@ public class BasketsController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("{userId:guid}/enrich")]
-    public async Task<IActionResult> GetEnriched(Guid userId, CancellationToken ct)
-    {
-        var b = await _sender.Send(new GetEnrichedBasketQuery(userId), ct);
-        return Ok(Map(b));
-    }
+    //[HttpGet("{userId:guid}/enrich")]
+    //public async Task<IActionResult> GetEnriched(Guid userId, CancellationToken ct)
+    //{
+    //    var b = await _sender.Send(new GetEnrichedBasketQuery(userId), ct);
+    //    return Ok(Map(b));
+    //}
 
-    private static BasketResponse Map(BasketService.Domain.Entities.Basket b)
-        => new(b.UserId, b.Items.Select(i =>
-            new BasketItemResponse(i.ProductId, i.Quantity)).ToList());
+    //private static BasketResponse Map(Basket.Domain.Entities.Basket b)
+    //    => new(b.UserId, b.Items.Select(i =>
+    //        new BasketItemResponse(i.ProductId, i.Quantity)).ToList());
 }

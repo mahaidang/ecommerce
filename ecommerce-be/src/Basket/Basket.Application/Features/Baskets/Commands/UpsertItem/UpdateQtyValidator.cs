@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace BasketService.Application.Features.Baskets.Commands.UpsertItem;
+namespace Basket.Application.Features.Baskets.Commands.UpsertItem;
 
 public sealed class UpdateQtyValidator : AbstractValidator<UpdateQtyCommand>
 {

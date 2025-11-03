@@ -1,7 +1,6 @@
-﻿using BasketService.Domain.Entities;
-using MediatR;
+﻿//using MediatR;
 
-namespace BasketService.Application.Features.Baskets.Queries;
+//namespace Basket.Application.Features.Baskets.Queries;
 
-//public sealed record GetBasketQuery(Guid UserId) : IRequest<Domain.Entities.Basket>;
-public record GetBasketQuery(Guid UserId) : IRequest<BasketDto>;
+////public sealed record GetBasketQuery(Guid UserId) : IRequest<Domain.Entities.Basket>;
+//public record GetBasketQuery(Guid UserId) : IRequest<BasketDto>;

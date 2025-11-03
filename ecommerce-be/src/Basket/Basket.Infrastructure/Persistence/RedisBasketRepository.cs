@@ -1,9 +1,11 @@
-﻿using System.Text.Json;
-using BasketService.Application.Abstractions.Persistence;
-using BasketService.Domain.Entities;
+﻿using Basket.Application.Features.Baskets.Dtos;
+using Basket.Application.Abstractions.Persistence;
+using Basket.Application.Features.Baskets.Queries;
+using Basket.Domain.Entities;
 using StackExchange.Redis;
+using System.Text.Json;
 
-namespace BasketService.Infrastructure.Persistence;
+namespace Basket.Infrastructure.Persistence;
 
 public sealed class RedisBasketRepository : IBasketRepository
 {
@@ -19,18 +21,18 @@ public sealed class RedisBasketRepository : IBasketRepository
     public RedisBasketRepository(IConnectionMultiplexer mux)
         => _db = mux.GetDatabase();
 
-    public async Task<Domain.Entities.Basket?> GetAsync(Guid userId, CancellationToken ct)
+    public async Task<Domain.Entities.Basket?> GetAsync(string key, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
-        var value = await _db.StringGetAsync(Key(userId));
+        var value = await _db.StringGetAsync(key);
         if (value.IsNullOrEmpty) return null;
 
         ct.ThrowIfCancellationRequested();
         return JsonSerializer.Deserialize<Domain.Entities.Basket>(value!, JsonOpt);
     }
 
-    public async Task UpsertAsync(Domain.Entities.Basket basket, TimeSpan? ttl, CancellationToken ct)
+    public async Task UpsertAsync(string key, Domain.Entities.Basket basket, TimeSpan? ttl, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -38,48 +40,71 @@ public sealed class RedisBasketRepository : IBasketRepository
         var payload = JsonSerializer.Serialize(basket, JsonOpt);
 
         // StackExchange.Redis chưa nhận CancellationToken ở các API phổ biến
-        await _db.StringSetAsync(Key(basket.UserId), payload, ttl);
+
+        await _db.StringSetAsync(key, payload, ttl);
 
         ct.ThrowIfCancellationRequested();
     }
 
-    public async Task<bool> RemoveItemAsync(Guid userId, Guid productId, TimeSpan? ttl, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
+    //public async Task<bool> RemoveItemAsync(Guid userId, Guid productId, TimeSpan? ttl, CancellationToken ct)
+    //{
+    //    ct.ThrowIfCancellationRequested();
 
-        var basket = await GetAsync(userId, ct);
-        if (basket is null) return false;
+    //    var basket = await GetAsync(userId, ct);
+    //    if (basket is null) return false;
 
-        basket.Items ??= new List<BasketItem>();
-        var removed = basket.Items.RemoveAll(i => i.ProductId == productId) > 0;
-        if (!removed) return false;
+    //    basket.Items ??= new List<BasketItem>();
+    //    var removed = basket.Items.RemoveAll(i => i.ProductId == productId) > 0;
+    //    if (!removed) return false;
 
-        await UpsertAsync(basket, ttl, ct);
-        return true;
-    }
+    //    await UpsertAsync(basket, ttl, ct);
+    //    return true;
+    //}
 
-    public async Task AddOrUpdateItemAsync(Guid userId, BasketItem item, TimeSpan? ttl, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
+    //#region AddOrUpdateItemAsync
+    //public async Task AddOrUpdateItemAsync(Guid userId, BasketItem item, TimeSpan? ttl, CancellationToken ct)
+    //{
+    //    ct.ThrowIfCancellationRequested();
 
-        var basket = await GetAsync(userId, ct) ?? new Domain.Entities.Basket { UserId = userId, Items = new() };
+    //    var basket = await GetAsync(, ct) ?? new Domain.Entities.Basket { UserId = userId, Items = new() };
 
-        var existing = basket.Items.FirstOrDefault(i => i.ProductId == item.ProductId);
-        if (existing is null)
-        {
-            basket.Items.Add(item);
-        }
-        else
-        {
-            existing.Quantity = item.Quantity;
-        }
+    //    var existing = basket.Items.FirstOrDefault(i => i.ProductId == item.ProductId);
+    //    if (existing is null)
+    //    {
+    //        basket.Items.Add(item);
+    //    }
+    //    else
+    //    {
+    //        existing.Quantity = item.Quantity;
+    //    }
 
-        await UpsertAsync(basket, ttl, ct);
-    }
+    //    await UpsertAsync(basket, ttl, ct);
+    //}
+    //#endregion
 
+    //clear
     public async Task ClearAsync(Guid userId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         await _db.KeyDeleteAsync(Key(userId));
+    }
+
+    public async Task SaveBasketAsync(string key, SaveBasketDto dto, CancellationToken ct, TimeSpan? ttl = null)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var basket = await GetAsync(key, ct) ?? new Domain.Entities.Basket { UserId = dto.UserId, SessionId = dto.SessionId, Items = new() };
+
+        var existing = basket.Items.FirstOrDefault(i => i.ProductId == dto.ProductId);
+        if (existing is null)
+        {
+            basket.Items.Add(new BasketItem { ProductId = dto.ProductId, Quantity = dto.Quantity });
+        }
+        else
+        {
+            existing.Quantity = dto.Quantity;
+        }
+
+        await UpsertAsync(key, basket, ttl, ct);
     }
 }

@@ -1,7 +1,7 @@
-﻿using BasketService.Application.Abstractions.External;
+﻿using Basket.Application.Abstractions.External;
 using System.Net.Http.Json;
 
-namespace BasketService.Infrastructure.External;
+namespace Basket.Infrastructure.External;
 
 public sealed class ProductCatalogClient(HttpClient http) : IProductCatalogClient
 {
