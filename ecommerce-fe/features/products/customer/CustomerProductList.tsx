@@ -1,6 +1,8 @@
+import { useSaveItem } from "@/features/basket/hooks";
+import { getUserIdFromToken } from "@/lib/auth";
+import { getOrCreateSessionId } from "@/lib/session";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ProductPage } from "../types";
 
 type CustomerProductListProps = {
   data?: any;
@@ -11,6 +13,18 @@ const CustomerProductList = ({ data }: CustomerProductListProps) => {
 
     const router = useRouter();
     const searchParams = useSearchParams();
+        const saveItem = useSaveItem();
+        const userId = getUserIdFromToken();
+        const sessionId = getOrCreateSessionId();
+        const [showSuccess, setShowSuccess] = useState(false);
+
+        useEffect(() => {
+            if (saveItem.isSuccess) {
+                setShowSuccess(true);
+                const timer = setTimeout(() => setShowSuccess(false), 2000);
+                return () => clearTimeout(timer);
+            }
+        }, [saveItem.isSuccess]);
 
 
     const formatPrice = (price: number) => {
@@ -21,7 +35,13 @@ const CustomerProductList = ({ data }: CustomerProductListProps) => {
     };
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-lg">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg relative">
+            {/* Hiển thị thông báo thêm thành công */}
+            {showSuccess && (
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-green-600 text-white rounded shadow-lg animate-fade-in-out">
+                    Đã thêm vào giỏ hàng!
+                </div>
+            )}
             <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Danh sách sản phẩm</h1>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {data?.items.map((product: any) => (
@@ -58,11 +78,15 @@ const CustomerProductList = ({ data }: CustomerProductListProps) => {
                                 </p>
                                 {/* Add to Cart Button */}
                                 <button
-                                    className="bg-blue-600 dark:bg-blue-500 text-white p-2 rounded-full shadow-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200"
+                                    className="bg-blue-600 dark:bg-blue-500 text-white p-2 rounded-full shadow-md hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        // TODO: Implement add to cart logic
-                                        console.log("Add to cart:", product.id);
+                                        saveItem.mutate({
+                                            userId: userId ?? undefined,
+                                            sessionId,
+                                            productId: product.id,
+                                            quantity: 1,
+                                        });
                                     }}
                                     aria-label="Thêm vào giỏ hàng"
                                 >

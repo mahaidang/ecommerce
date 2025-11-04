@@ -11,6 +11,17 @@ export function useBasket(userId?: string, sessionId?: string) {
   });
 }
 
+// Hook xóa 1 sản phẩm khỏi giỏ hàng
+export function useRemoveItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: basketApi.removeItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["basket"] });
+    },
+  });
+}
+
 // Hook update toàn bộ giỏ hàng
 export function useUpdateAllBasket() {
   const queryClient = useQueryClient();
@@ -22,7 +33,16 @@ export function useUpdateAllBasket() {
   });
 }
 
-
+// Hook lưu 1 item vào giỏ hàng
+export function useSaveItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: basketApi.saveItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["basket"] });
+    },
+  });
+}
 // export function useAddToBasket() {
 //   const queryClient = useQueryClient();
 //   return useMutation({
