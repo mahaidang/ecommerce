@@ -24,28 +24,28 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             UserId = req.UserId,
             OrderNo = GenOrderNo(),
             Status = "Pending",
-            Currency = (req.Currency ?? "VND").ToUpperInvariant(),
             Subtotal = subtotal,
             DiscountTotal = req.DiscountTotal,
             ShippingFee = req.ShippingFee,
             GrandTotal = grand,
             Note = req.Note,
-            CreatedAtUtc = DateTime.UtcNow
+            CreatedAtUtc = DateTime.UtcNow,
+            UpdatedAtUtc = DateTime.UtcNow
         };
 
         foreach (var i in req.Items)
         {
-            order.OrderItems.Add(new OrderItem
+            var o = new OrderItem
             {
                 Id = Guid.NewGuid(),
                 OrderId = order.Id,
                 ProductId = i.ProductId,
-                Sku = i.Sku.Trim(),
                 ProductName = i.ProductName.Trim(),
                 UnitPrice = i.UnitPrice,
                 Quantity = i.Quantity,
                 LineTotal = i.UnitPrice * i.Quantity
-            });
+            };
+            order.OrderItems.Add(o);
         }
 
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
@@ -62,7 +62,8 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
                     x.Sku,
                     x.ProductName,
                     x.Quantity,
-                    x.UnitPrice
+                    x.UnitPrice,
+                    x.LineTotal
                 )
             ).ToList()
         );
@@ -97,6 +98,6 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
 }
 
 // Local DTOs/envelope to avoid external dependency
-public sealed record OrderItemData(Guid ProductId, string Sku, string ProductName, int Quantity, decimal UnitPrice);
+public sealed record OrderItemData(Guid ProductId, string Sku, string ProductName, int Quantity, decimal UnitPrice, decimal? LineTotal);
 public sealed record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal, List<OrderItemData> Items);
 public sealed record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid AggregateId, T Data, DateTime OccurredAtUtc);

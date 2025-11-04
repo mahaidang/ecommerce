@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ordering.Domain.Entities;
-using Ordering.Infrastructure;
+using OrderingService.Infrastructure.Models;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.RegularExpressions;

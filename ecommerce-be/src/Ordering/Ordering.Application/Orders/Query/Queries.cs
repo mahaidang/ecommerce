@@ -3,7 +3,7 @@
 namespace Ordering.Application.Orders;
 
 // GET /api/Orders?userId=...&page=&pageSize=
-public record GetOrdersByUserQuery(Guid UserId, int Page = 1, int PageSize = 20)
+public record GetOrdersByUserQuery(Guid UserId, int Page = 1, int PageSize = 20, string status = "")
   : IRequest<PagedOrdersResult>;
 
 public record PagedOrdersResult(int Total, int Page, int PageSize, IReadOnlyList<OrderListItemDto> Items);

@@ -1,6 +1,6 @@
 ﻿using Refit;
 
-namespace Basket.Application.Abstractions.External;
+namespace Ordering.Application.Abstractions.External;
 
 public interface IProductApi
 {

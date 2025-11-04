@@ -50,7 +50,7 @@ export default function BasketPage() {
 
     // Thanh toán nhiều
     const handleCheckout = () => {
-        alert("Thanh toán các sản phẩm: " + selected.join(", "));
+        // Không còn alert khi ấn tiến hành đặt hàng
     };
 
     // Xóa từng item

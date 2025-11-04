@@ -3,10 +3,8 @@
 using Microsoft.EntityFrameworkCore;
 using Ordering.Application.Common;
 using Ordering.Domain.Entities;
-using System;
-using System.Collections.Generic;
 
-namespace Ordering.Infrastructure;
+namespace OrderingService.Infrastructure.Models;
 
 public partial class OrderingDbContext : DbContext, IOrderingDbContext
 {
@@ -63,25 +61,21 @@ public partial class OrderingDbContext : DbContext, IOrderingDbContext
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderIte__3214EC0787C3BEDD");
+            entity.HasKey(e => e.Id).HasName("PK__OrderIte__3214EC07824439CF");
 
             entity.ToTable("OrderItems", "ordering");
 
-            entity.HasIndex(e => e.OrderId, "IX_OrderItems_OrderId");
-
-            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
-            entity.Property(e => e.LineTotal)
-                .HasComputedColumnSql("([UnitPrice]*[Quantity])", true)
-                .HasColumnType("decimal(29, 2)");
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.LineTotal).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ProductName)
                 .IsRequired()
-                .HasMaxLength(250);
-            entity.Property(e => e.Sku).HasMaxLength(64);
+                .HasMaxLength(255);
+            entity.Property(e => e.Sku).HasMaxLength(100);
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.OrderId)
-                .HasConstraintName("FK__OrderItem__Order__7D439ABD");
+                .HasConstraintName("FK_OrderItems_Orders");
         });
 
         modelBuilder.Entity<OutboxMessage>(entity =>

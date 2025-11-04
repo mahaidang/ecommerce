@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useProductFull } from "../hooks"
 import { useParams } from "next/navigation";
 import { BackButton } from "@/components/ui/BackButton";
@@ -21,10 +22,7 @@ const CustomerProductDetail = () => {
     const productId = params?.id as string;
     const product = useProductFull(productId);
     const [mainImage, setMainImage] = useState("/placeholder.png");
-    const [showVariantModal, setShowVariantModal] = useState(false);
-    const [actionType, setActionType] = useState<"cart" | "buy" | null>(null);
-    const [selectedVariant, setSelectedVariant] = useState<string>("");
-    const [quantity, setQuantity] = useState<number>(1);
+    // Đã loại bỏ state cho modal, biến thể, số lượng
 
     useEffect(() => {
         if (product.data?.images?.[0]?.url) {
@@ -46,25 +44,41 @@ const CustomerProductDetail = () => {
             Math.max(prev - 3, 0)
         );
 
-    const handleChooseVariant = (type: "cart" | "buy") => {
-        setActionType(type);
-        setShowVariantModal(true);
-        setQuantity(1);
+    // Thêm vào giỏ hàng trực tiếp
+    const handleAddToCart = () => {
+        if (!product.data) return;
+        const basket = JSON.parse(localStorage.getItem("basket") || "[]");
+        if (!basket.find((item: any) => item.id === productId)) {
+            basket.push({
+                id: productId,
+                name: product.data.name,
+                price: product.data.price,
+                imageUrl: product.data.images?.[0]?.url || "/placeholder.png",
+            });
+            localStorage.setItem("basket", JSON.stringify(basket));
+        }
+        alert("Đã thêm vào giỏ hàng!");
     };
 
-    const handleConfirm = () => {
-        setShowVariantModal(false);
-        if (!selectedVariant) return;
-        if (actionType === "cart") {
-            alert(
-                `🛒 Thêm vào giỏ hàng: ${selectedVariant} – Số lượng: ${quantity}`
-            );
-        } else {
-            alert(`💳 Mua ngay: ${selectedVariant} – Số lượng: ${quantity}`);
+    // Mua ngay: lưu id vào localStorage và chuyển sang checkout
+    const handleBuyNow = () => {
+        if (!product.data) return;
+        localStorage.setItem("checkout_selected", JSON.stringify([productId]));
+        const basket = JSON.parse(localStorage.getItem("basket") || "[]");
+        if (!basket.find((item: any) => item.id === productId)) {
+            basket.push({
+                id: productId,
+                name: product.data.name,
+                price: product.data.price,
+                imageUrl: product.data.images?.[0]?.url || "/placeholder.png",
+            });
+            localStorage.setItem("basket", JSON.stringify(basket));
         }
-        setSelectedVariant("");
-        setActionType(null);
+        router.push("/customer/checkout");
     };
+
+    const router = useRouter();
+    // Đã loại bỏ handleConfirm và các biến liên quan modal/biến thể/số lượng
     if (product.isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-950 dark:to-neutral-900">
@@ -193,7 +207,7 @@ const CustomerProductDetail = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0"
-                                        onClick={() => handleChooseVariant("cart")}
+                                        onClick={handleAddToCart}
                                     >
                                         <span className="flex items-center justify-center gap-2">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +218,7 @@ const CustomerProductDetail = () => {
                                     </button>
                                     <button
                                         className="group relative px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 dark:hover:from-red-600 dark:hover:to-red-700 transition-all shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-0.5 active:translate-y-0"
-                                        onClick={() => handleChooseVariant("buy")}
+                                        onClick={handleBuyNow}
                                     >
                                         <span className="flex items-center justify-center gap-2">
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,108 +237,7 @@ const CustomerProductDetail = () => {
                 </div>
             </div>
 
-            {/* Modal chọn biến thể */}
-            {showVariantModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 max-w-md w-full shadow-2xl border border-gray-200 dark:border-neutral-800 animate-in zoom-in-95 duration-200">
-                        <div className="flex items-start justify-between mb-6">
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                                    Tùy chọn sản phẩm
-                                </h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Chọn loại và số lượng bạn muốn
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setShowVariantModal(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-                            >
-                                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Biến thể sản phẩm */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                Loại sản phẩm
-                            </label>
-                            <div className="flex flex-wrap gap-2">
-                                {p.variants && p.variants.length > 0 ? (
-                                    p.variants.map((variant: string, i: number) => (
-                                        <button
-                                            key={i}
-                                            className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
-                                                selectedVariant === variant
-                                                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30 scale-105"
-                                                    : "bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700"
-                                            }`}
-                                            onClick={() => setSelectedVariant(variant)}
-                                        >
-                                            {variant}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm py-2">
-                                        Không có biến thể cho sản phẩm này.
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Nhập số lượng */}
-                        <div className="mb-8">
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                                Số lượng
-                            </label>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                                    </svg>
-                                </button>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                                    className="w-20 text-center px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 font-semibold focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
-                                />
-                                <button
-                                    onClick={() => setQuantity(quantity + 1)}
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Nút hành động */}
-                        <div className="flex gap-3">
-                            <button
-                                className="flex-1 px-6 py-3.5 rounded-xl bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
-                                onClick={() => setShowVariantModal(false)}
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                className="flex-1 px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white font-semibold hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
-                                onClick={handleConfirm}
-                                disabled={!selectedVariant || quantity < 1}
-                            >
-                                Xác nhận
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Đã loại bỏ modal chọn biến thể và số lượng */}
         </div>
     );
 };
