@@ -65,12 +65,16 @@ public class BasketsController : ControllerBase
         return Ok(new { message = "Basket updated successfully" });
     }
     //delete product
-    [HttpDelete("{userId:guid}/items/{productId:guid}")]
-    public async Task<IActionResult> RemoveItem(Guid userId, Guid productId, CancellationToken ct)
+    [HttpDelete("items/{productId:guid}")]
+    public async Task<IActionResult> RemoveItem(
+        [FromQuery] Guid? userId,
+        [FromQuery] string? sessionId, 
+        Guid productId, 
+        CancellationToken ct)
     {
         try
         {
-            await _sender.Send(new RemoveItemCommand(userId, productId, _ttl), ct);
+            await _sender.Send(new RemoveItemCommand(userId, sessionId, productId), ct);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }

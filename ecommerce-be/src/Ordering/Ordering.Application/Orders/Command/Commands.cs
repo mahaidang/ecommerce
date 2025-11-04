@@ -2,9 +2,9 @@
 
 namespace Ordering.Application.Orders.Command;
 
-public record CreateOrderItemDto(Guid ProductId, string Sku, string ProductName, decimal UnitPrice, int Quantity, string Currency);
+public record CreateOrderItemDto(Guid ProductId, string ProductName, decimal UnitPrice, int Quantity);
 public record CreateOrderCommand(
-    Guid UserId, string Currency, decimal DiscountTotal, decimal ShippingFee, string? Note,
+    Guid UserId, decimal DiscountTotal, decimal ShippingFee, string? Note,
     IReadOnlyList<CreateOrderItemDto> Items
 ) : IRequest<CreateOrderResult>;
 public record CreateOrderResult(Guid OrderId, string OrderNo, decimal? GrandTotal);

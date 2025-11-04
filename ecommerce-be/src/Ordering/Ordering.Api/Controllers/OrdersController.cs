@@ -30,10 +30,10 @@ public class OrdersController : ControllerBase
 
     // GET /api/Orders?userId=...&page=&pageSize=
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
+    public async Task<IActionResult> List([FromQuery] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string status = "", CancellationToken ct = default)
     {
         if (userId == Guid.Empty) return BadRequest("userId is required.");
-        var result = await _mediator.Send(new GetOrdersByUserQuery(userId, page, pageSize), ct);
+        var result = await _mediator.Send(new GetOrdersByUserQuery(userId, page, pageSize, status), ct);
         return Ok(result);
     }
 

@@ -7,6 +7,7 @@ using Ordering.Application.Inventory;
 using Ordering.Infrastructure.Inventory;
 using Ordering.Infrastructure.Outbox;
 using Ordering.Infrastructure.Saga;
+using OrderingService.Infrastructure.Models;
 using RabbitMQ.Client;
 
 

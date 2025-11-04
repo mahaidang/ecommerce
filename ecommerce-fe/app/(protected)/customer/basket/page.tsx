@@ -5,28 +5,28 @@ import BasketList from "@/features/basket/components/BasketList";
 import BasketActions from "@/features/basket/components/BasketActions";
 import { getUserIdFromToken } from "@/lib/auth";
 import { getOrCreateSessionId } from "@/lib/session";
-import { useBasket, useUpdateAllBasket } from "@/features/basket/hooks";
+import { useBasket, useUpdateAllBasket, useRemoveItem } from "@/features/basket/hooks";
 
 
 export default function BasketPage() {
     const userId = getUserIdFromToken();
     const sessionId = getOrCreateSessionId();
     const { data: basket, isLoading } = useBasket(userId ?? undefined, sessionId);
-    const [selected, setSelected] = useState<string[]>([]); // name làm key
+    const [selected, setSelected] = useState<string[]>([]); // id làm key
     // State tạm cho số lượng chỉnh sửa
     const [editQuantities, setEditQuantities] = useState<Record<string, number>>({});
     const [isEditing, setIsEditing] = useState(false);
 
     // Tick chọn
-    const handleSelect = (name: string, checked: boolean) => {
+    const handleSelect = (id: string, checked: boolean) => {
         setSelected((prev) =>
-            checked ? [...prev, name] : prev.filter((n) => n !== name)
+            checked ? [...prev, id] : prev.filter((n) => n !== id)
         );
     };
 
     // Khi thay đổi số lượng chỉ update local state
-    const handleUpdate = (name: string, quantity: number) => {
-        setEditQuantities((prev) => ({ ...prev, [name]: quantity }));
+    const handleUpdate = (id: string, quantity: number) => {
+        setEditQuantities((prev) => ({ ...prev, [id]: quantity }));
         setIsEditing(true);
     };
 
@@ -34,10 +34,10 @@ export default function BasketPage() {
     const updateAllMutation = useUpdateAllBasket();
     const handleSave = () => {
         if (!basket) return;
-        // Map từ name -> productId
+        // Map từ id -> productId
         const items = basket.items.map(item => ({
             productId: item.id,
-            quantity: editQuantities[item.name] ?? item.quantity,
+            quantity: editQuantities[item.id] ?? item.quantity,
         }));
         updateAllMutation.mutate({
             userId,
@@ -48,23 +48,20 @@ export default function BasketPage() {
         setEditQuantities({});
     };
 
-    // Xóa nhiều (TODO: gọi API xóa)
-    const handleDelete = () => {
-        // TODO: Gọi API xóa nhiều
-        alert("Xóa các sản phẩm: " + selected.join(", "));
-        setSelected([]);
-    };
-
     // Thanh toán nhiều
     const handleCheckout = () => {
-        alert("Thanh toán các sản phẩm: " + selected.join(", "));
+        // Không còn alert khi ấn tiến hành đặt hàng
     };
 
-    // Xóa từng item (TODO: gọi API xóa)
-    const handleRemove = (name: string) => {
-        // TODO: Gọi API xóa
-        alert(`Xóa sản phẩm: ${name}`);
-        setSelected((prev) => prev.filter((n) => n !== name));
+    // Xóa từng item
+    const removeItemMutation = useRemoveItem();
+    const handleRemove = (id: string) => {
+        removeItemMutation.mutate({
+            userId: userId ?? undefined,
+            sessionId,
+            productId: id,
+        });
+        setSelected((prev) => prev.filter((n) => n !== id));
     };
 
     if (isLoading) return <div className="p-8 text-gray-500">Đang tải giỏ hàng...</div>;
@@ -73,7 +70,7 @@ export default function BasketPage() {
     // Dữ liệu hiển thị: nếu có chỉnh sửa thì lấy số lượng từ editQuantities, không thì lấy từ basket
     const displayItems = basket.items.map((item) => ({
         ...item,
-        quantity: editQuantities[item.name] ?? item.quantity,
+        quantity: editQuantities[item.id] ?? item.quantity,
     }));
 
     return (
@@ -93,7 +90,6 @@ export default function BasketPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-8">
                 <BasketActions
                     selected={selected}
-                    onDelete={handleDelete}
                     onCheckout={handleCheckout}
                 />
                 {isEditing && (
@@ -110,7 +106,7 @@ export default function BasketPage() {
                 Tổng tiền: {" "}
                 <span className="text-blue-600">
                     {displayItems
-                        .filter((item) => selected.length === 0 || selected.includes(item.name))
+                        .filter((item) => selected.length === 0 || selected.includes(item.id))
                         .reduce((sum, item) => sum + item.price * item.quantity, 0)
                         .toLocaleString("vi-VN")}
                     ₫

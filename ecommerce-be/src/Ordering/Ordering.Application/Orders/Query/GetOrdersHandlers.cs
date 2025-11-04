@@ -16,16 +16,20 @@ public sealed class GetOrdersByUserHandler : IRequestHandler<GetOrdersByUserQuer
 
         var q = _db.Orders
                    .AsNoTracking()
-                   .Where(x => x.UserId == req.UserId)
+                   .Where(x => (x.UserId == req.UserId && (string.IsNullOrEmpty(req.status) || x.Status == req.status)))
                    .OrderByDescending(x => x.CreatedAtUtc);
 
         var total = await q.CountAsync(ct);
-        var items = await q.Skip((page - 1) * pageSize)
-                           .Take(pageSize)
-                           .Select(x => new OrderListItemDto(
-                               x.Id, x.OrderNo, x.UserId, x.Status, x.Currency,
-                               x.GrandTotal, x.CreatedAtUtc))
-                           .ToListAsync(ct);
+        var items = await q
+                        .Where(c => string.IsNullOrEmpty(req.status) || c.Status == req.status)
+                        .OrderByDescending(c => c.CreatedAtUtc) // nếu cần sắp xếp
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .Select(x => new OrderListItemDto(
+                            x.Id, x.OrderNo, x.UserId, x.Status, x.Currency,
+                            x.GrandTotal, x.CreatedAtUtc))
+                        .ToListAsync(ct);
+
 
         return new PagedOrdersResult(total, page, pageSize, items);
     }
