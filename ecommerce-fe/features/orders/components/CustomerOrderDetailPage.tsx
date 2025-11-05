@@ -33,6 +33,12 @@ export default function CustomerOrderDetailPage({ orderId }: { orderId: string }
       <div className="mb-2 text-gray-500 text-sm">Mã đơn: <span className="font-mono">{order.id}</span></div>
       <div className="mb-2 text-gray-500 text-sm">Ngày tạo: {order.createdAtUtc && new Date(order.createdAtUtc).toLocaleString("vi-VN")}</div>
       <div className="mb-2 text-gray-500 text-sm">Ngày cập nhật: {order.updatedAtUtc && new Date(order.updatedAtUtc).toLocaleString("vi-VN")}</div>
+      {/* Thông tin nhận hàng */}
+      <div className="mb-2 text-gray-700 dark:text-gray-300">
+  <div><span className="font-semibold">Địa chỉ nhận hàng:</span> {order.address || "-"}</div>
+  <div><span className="font-semibold">Tên người nhận:</span> {order.name || "-"}</div>
+  <div><span className="font-semibold">Số điện thoại:</span> {order.phone || "-"}</div>
+      </div>
       <div className="mb-2">
         <span className={`px-2 py-1 rounded text-xs font-semibold ${status.color}`}>{status.label}</span>
       </div>

@@ -1,14 +1,10 @@
-﻿using Grpc.Net.Client;
+﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ordering.Application.Common;
-using Ordering.Application.Inventory;
-using Ordering.Infrastructure.Inventory;
-using Ordering.Infrastructure.Outbox;
-using Ordering.Infrastructure.Saga;
-using OrderingService.Infrastructure.Models;
-using RabbitMQ.Client;
+using Ordering.Infrastructure.Models;
+
 
 
 namespace Ordering.Infrastructure.DependencyInjection;
@@ -27,30 +23,33 @@ public static class InfrastructureModule
         services.AddScoped<IOrderingDbContext>(sp =>
             sp.GetRequiredService<OrderingDbContext>());
 
-        // ✅ gRPC Client (tới InventoryService)
-        services.AddSingleton(sp =>
-        {
-            var addr = config["Grpc:InventoryBaseUrl"]!;
-            var ch = GrpcChannel.ForAddress(addr);
-            return new InventoryService.Grpc.Inventory.InventoryClient(ch);
-        });
-        services.AddSingleton<IInventoryStockClient, GrpcInventoryStockClient>();
+        //// ✅ gRPC Client (tới InventoryService)
+        //services.AddSingleton(sp =>
+        //{
+        //    var addr = config["Grpc:InventoryBaseUrl"]!;
+        //    var ch = GrpcChannel.ForAddress(addr);
+        //    return new InventoryService.Grpc.Inventory.InventoryClient(ch);
+        //});
+        //services.AddSingleton<IInventoryStockClient, GrpcInventoryStockClient>();
 
-        // ✅ RabbitMQ connection
-        services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
+        // ✅ MassTransit (thay cho RabbitMQ thủ công + OutboxPublisher + SagaConsumer)
+        services.AddMassTransit(x =>
         {
-            HostName = config["RabbitMq:Host"],
-            Port = int.Parse(config["RabbitMq:Port"] ?? "5672"),
-            UserName = config["RabbitMq:User"],
-            Password = config["RabbitMq:Pass"],
-            DispatchConsumersAsync = true
-        });
-        services.AddSingleton<IConnection>(sp =>
-            sp.GetRequiredService<IConnectionFactory>().CreateConnection());
+            // Nếu sau này có consumer (như UpdateOrderStatusConsumer) thì add ở đây
+            x.AddConsumers(typeof(InfrastructureModule).Assembly);
 
-        // ✅ Background services
-        services.AddHostedService<OutboxPublisher>();
-        services.AddHostedService<OrderingSagaConsumer>();
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(config["RabbitMq:Host"] ?? "rabbitmq", "/", h =>
+                {
+                    h.Username(config["RabbitMq:User"] ?? "guest");
+                    h.Password(config["RabbitMq:Pass"] ?? "guest");
+                });
+
+                // Tự động tạo queue, exchange, binding dựa theo conventions
+                cfg.ConfigureEndpoints(context);
+            });
+        });
 
         return services;
     }

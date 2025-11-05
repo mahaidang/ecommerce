@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import CustomerProductList from "./CustomerProductList";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useProducts } from "../hooks";
-import Pagination from "../shared/components/Pagination";
+import Pagination from "../../common/Pagination";
 
 export default function CustomerProductSearchPage() {
     const router = useRouter();

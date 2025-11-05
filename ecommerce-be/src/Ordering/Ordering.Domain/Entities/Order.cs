@@ -31,5 +31,11 @@ public partial class Order
 
     public DateTime? UpdatedAtUtc { get; set; }
 
+    public string FullAddress { get; set; }
+
+    public string Name { get; set; }
+
+    public string PhoneNumber { get; set; }
+
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

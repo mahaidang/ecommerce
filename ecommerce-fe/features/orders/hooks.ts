@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ordersApi, OrdersListParams, OrdersListResult, CreateOrderCommand } from "./api";
+import { ordersApi, OrdersListParams, OrdersListResult } from "./api";
+import { CreateOrderCommand } from "./types";
 
 // Lấy chi tiết đơn hàng từ API
 export function useCustomerOrderDetail(orderId: string) {
@@ -34,9 +35,12 @@ export function useCustomerOrdersPaging(params: OrdersListParams) {
   };
 }
 
+// Hook tạo đơn hàng mới
 export function useCreateOrder() {
   return useMutation({
     mutationFn: (cmd: CreateOrderCommand) => ordersApi.create(cmd),
   });
 }
+
+
 
