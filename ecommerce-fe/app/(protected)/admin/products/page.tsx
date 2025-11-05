@@ -16,6 +16,7 @@ import {
 import { CreateProductDialog } from "@/features/products/admin/components/CreateProductDialog";
 import { DeleteProductDialog } from "@/features/products/admin/components/DeleteProductDialog";
 import { EditProductDialog } from "@/features/products/admin/components/EditProductDialog";
+import Pagination from "@/features/common/Pagination";
 
 import { useProducts } from "@/features/products/hooks";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -167,43 +168,7 @@ export default function ProductsPage() {
                     </TableBody>
                   </Table>
 
-                  <div className="flex items-center justify-center gap-2 mt-4">
-                    <button
-                      className="px-3 py-1 rounded border text-sm disabled:opacity-50"
-                      onClick={() => setPage(1)}
-                      disabled={page === 1}
-                      aria-label="Trang đầu"
-                    >
-                       ⏮
-                    </button>
-                    <button
-                      className="px-3 py-1 rounded border text-sm disabled:opacity-50"
-                      onClick={() => setPage(page - 1)}
-                      disabled={page === 1}
-                      aria-label="Trang trước"
-                    >
-                       ←
-                    </button>
-                    <span className="px-2 text-sm">
-                      Trang <b>{page}</b> / {totalPages}
-                    </span>
-                    <button
-                      className="px-3 py-1 rounded border text-sm disabled:opacity-50"
-                      onClick={() => setPage(page + 1)}
-                      disabled={page === totalPages}
-                      aria-label="Trang sau"
-                    >
-                       →
-                    </button>
-                    <button
-                      className="px-3 py-1 rounded border text-sm disabled:opacity-50"
-                      onClick={() => setPage(totalPages)}
-                      disabled={page === totalPages}
-                      aria-label="Trang cuối" 
-                    >
-                       ⏭
-                    </button>
-                  </div>
+                  <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                 </>
               )}
             </CardContent>

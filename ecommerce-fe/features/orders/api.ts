@@ -1,4 +1,4 @@
-import { CustomerOrder } from "./types";
+import { CreateOrderCommand, CustomerOrder } from "./types";
 import api from "@/lib/api";
 import axios from "axios";
 
@@ -16,20 +16,6 @@ export interface OrdersListResult {
 	pageSize: number;
 }
 
-export interface CreateOrderItem {
-	productId: string;
-	productName: string;
-	unitPrice: number;
-	quantity: number;
-}
-
-export interface CreateOrderCommand {
-	userId: string;
-	discountTotal: number;
-	shippingFee: number;
-	note: string;
-	items: CreateOrderItem[];
-}
 
 export const ordersApi = {
 	async listWithPaging(params: OrdersListParams): Promise<OrdersListResult> {
@@ -61,5 +47,3 @@ export const ordersApi = {
 		}
 	},
 };
-
-// Đã chuyển vào ordersApi.create

@@ -48,7 +48,7 @@ public sealed class GetOrderDetailHandler : IRequestHandler<GetOrderDetailQuery,
             .Select(o => new OrderDetailDto(
                 o.Id, o.OrderNo, o.UserId, o.Status, o.Currency,
                 o.Subtotal, o.DiscountTotal, o.ShippingFee, o.GrandTotal,
-                o.Note, o.CreatedAtUtc,
+                o.Note, o.CreatedAtUtc, o.FullAddress, o.Name, o.PhoneNumber,
                 o.OrderItems.Select(i => new OrderItemDto(
                     i.Id, i.ProductId, i.Sku, i.ProductName, i.UnitPrice, i.Quantity, i.LineTotal
                 )).ToList()

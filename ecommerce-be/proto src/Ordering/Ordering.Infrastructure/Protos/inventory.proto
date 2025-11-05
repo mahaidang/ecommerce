@@ -1,4 +1,8 @@
-﻿syntax = "proto3";
+﻿// Proto definition for InventoryService gRPC communication.
+// Định nghĩa các message và service dùng để kiểm tra tồn kho sản phẩm.
+// Sử dụng cho giao tiếp giữa các service trong hệ thống Ecommerce.
+
+syntax = "proto3";
 
 // Namespace C# sinh ra khi generate code từ proto này.
 option csharp_namespace = "InventoryService.Grpc";

@@ -15,7 +15,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
 				disabled={page === 1}
 				aria-label="Trang đầu"
 			>
-				⏮
+				{"<<"}
 			</button>
 			<button
 				className="px-3 py-1 rounded border text-sm disabled:opacity-50"
@@ -23,7 +23,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
 				disabled={page === 1}
 				aria-label="Trang trước"
 			>
-				←
+				{"<"}
 			</button>
 			<span className="px-2 text-sm">
 				Trang <b>{page}</b> / {totalPages}
@@ -34,7 +34,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
 				disabled={page === totalPages}
 				aria-label="Trang sau"
 			>
-				→
+				{">"}
 			</button>
 			<button
 				className="px-3 py-1 rounded border text-sm disabled:opacity-50"
@@ -42,7 +42,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
 				disabled={page === totalPages}
 				aria-label="Trang cuối"
 			>
-				⏭
+				{">>"}
 			</button>
 		</div>
 	);

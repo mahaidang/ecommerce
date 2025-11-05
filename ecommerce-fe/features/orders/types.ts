@@ -21,7 +21,26 @@ export interface CustomerOrder {
   shippingFee: number;
   grandTotal: number;
   note?: string;
+  address: string,
+  name: string,
+  phone: string,
   createdAtUtc: string;
   updatedAtUtc: string;
   items: CustomerOrderItem[];
+}
+
+export interface CreateOrderCommand {
+  userId: string;
+  discountTotal: number;
+  shippingFee: number;
+  note: string;
+  address: string;
+  name: string;
+  phone: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    unitPrice: number;
+    quantity: number;
+  }>;
 }

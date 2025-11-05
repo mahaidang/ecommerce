@@ -6,7 +6,7 @@ public record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid OrderI
 // Events
 public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal,
     IReadOnlyList<OrderItemData> Items);
-public record OrderItemData(Guid ProductId, string Sku, string Name, int Quantity, decimal UnitPrice);
+public record OrderItemData(Guid ProductId, string Name, int Quantity, decimal UnitPrice);
 
 // Inventory
 public record InventoryReservedData(Guid WarehouseId, IReadOnlyList<ReservedItem> Items);

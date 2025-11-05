@@ -2,13 +2,21 @@
 using Ordering.Application.Common;
 using Ordering.Domain.Entities;
 using System.Text.Json;
+using MassTransit;
+
 
 namespace Ordering.Application.Orders.Command;
 
 public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, CreateOrderResult>
 {
     private readonly IOrderingDbContext _db;
-    public CreateOrderHandler(IOrderingDbContext db) => _db = db;
+    private readonly IPublishEndpoint _publisher;
+
+    public CreateOrderHandler(IOrderingDbContext db, IPublishEndpoint publisher)
+    {
+        _db = db;
+        _publisher = publisher;
+    }
 
     public async Task<CreateOrderResult> Handle(CreateOrderCommand req, CancellationToken ct)
     {
@@ -29,6 +37,9 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             ShippingFee = req.ShippingFee,
             GrandTotal = grand,
             Note = req.Note,
+            FullAddress = req.Address.Trim(),
+            Name = req.Name.Trim(),
+            PhoneNumber = req.Phone.Trim(),
             CreatedAtUtc = DateTime.UtcNow,
             UpdatedAtUtc = DateTime.UtcNow
         };
@@ -48,23 +59,16 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             order.OrderItems.Add(o);
         }
 
-        await using var tx = await _db.Database.BeginTransactionAsync(ct);
         _db.Orders.Add(order);
+        await _db.SaveChangesAsync(ct);
 
-        // Build event data using local DTOs (decoupled from Orchestrator service)
+        // 🟢 Wrap message trong EventEnvelope cho Orchestrator
         var orderCreatedData = new OrderCreatedData(
             order.UserId,
-            order.Currency,
+            "VND", // currency
             order.GrandTotal ?? 0,
             order.OrderItems.Select(x =>
-                new OrderItemData(
-                    x.ProductId,
-                    x.Sku,
-                    x.ProductName,
-                    x.Quantity,
-                    x.UnitPrice,
-                    x.LineTotal
-                )
+                new OrderItemData(x.ProductId, x.ProductName, x.Quantity, x.UnitPrice)
             ).ToList()
         );
 
@@ -76,16 +80,8 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             DateTime.UtcNow
         );
 
-        _db.OutboxMessages.Add(new OutboxMessage
-        {
-            Id = Guid.NewGuid(),
-            EventType = "order.created",
-            Payload = JsonSerializer.Serialize(envelope, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }),
-            OccurredAtUtc = DateTime.UtcNow
-        });
+        await _publisher.Publish(envelope, ct);
 
-        await _db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
 
         return new CreateOrderResult(order.Id, order.OrderNo, order.GrandTotal);
     }
@@ -97,7 +93,7 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
     }
 }
 
-// Local DTOs/envelope to avoid external dependency
-public sealed record OrderItemData(Guid ProductId, string Sku, string ProductName, int Quantity, decimal UnitPrice, decimal? LineTotal);
-public sealed record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal, List<OrderItemData> Items);
-public sealed record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid AggregateId, T Data, DateTime OccurredAtUtc);
+public record OrderItemData(Guid ProductId, string Name, int Quantity, decimal UnitPrice);
+public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal,
+    IReadOnlyList<OrderItemData> Items); 
+public record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid OrderId, T Data, DateTime utcNow);

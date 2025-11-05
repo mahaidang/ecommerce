@@ -9,7 +9,7 @@
    "OutputContextPath": null,
    "OutputPath": "Entities",
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "OrderingService.Domain",
+   "ProjectRootNamespace": "Ordering.Domain",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 2,

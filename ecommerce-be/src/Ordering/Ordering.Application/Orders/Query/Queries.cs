@@ -19,5 +19,5 @@ public record OrderItemDto(Guid Id, Guid ProductId, string Sku, string ProductNa
 public record OrderDetailDto(
     Guid Id, string OrderNo, Guid UserId, string Status, string Currency,
     decimal Subtotal, decimal DiscountTotal, decimal ShippingFee, decimal? GrandTotal,
-    string? Note, DateTime CreatedAtUtc,
+    string? Note, DateTime CreatedAtUtc, string Address, string Name, string Phone,
     IReadOnlyList<OrderItemDto> Items);

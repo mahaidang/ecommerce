@@ -1,9 +1,13 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import ShippingInfoModal from "@/features/checkout/ShippingInfoModal";
+import { BackButton } from "@/components/ui/BackButton";
 import { useCreateOrder } from "@/features/orders/hooks";
 import { getUserIdFromToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { BackButton } from "@/components/ui/BackButton";
+import React, { useState } from "react";
+import { ShippingInfoProvider, useShippingInfo } from "@/features/checkout/ShippingInfoContext";
+
 
 function formatVND(amount: number) {
   return amount.toLocaleString("vi-VN", { maximumFractionDigits: 0 }) + "₫";
@@ -17,7 +21,9 @@ interface CheckoutPageProps {
   products: BasketItem[];
 }
 
-export default function CheckoutPage({ products }: CheckoutPageProps) {
+function CheckoutPage({ products }: CheckoutPageProps) {
+  const { shippingInfo, setShippingInfo } = useShippingInfo();
+  const [showAddressModal, setShowAddressModal] = useState(false);
   const router = useRouter();
   const [productList, setProductList] = useState<BasketItem[]>(products);
   const [quantities, setQuantities] = useState<Record<string, number>>(() => {
@@ -26,12 +32,47 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
     return initial;
   });
 
-  // Luôn đồng bộ lại state khi products thay đổi (khi vào lại trang checkout)
+  // Nếu không có products, sẽ đọc từ localStorage và fetch chi tiết sản phẩm
   React.useEffect(() => {
-    setProductList(products);
-    const initial: Record<string, number> = {};
-    products.forEach((p: BasketItem) => { initial[p.id] = p.quantity; });
-    setQuantities(initial);
+    async function fetchProductsFromLocalStorage() {
+      try {
+        const idsRaw = localStorage.getItem("checkout_selected");
+        if (!idsRaw) return;
+        const ids: string[] = JSON.parse(idsRaw);
+        if (!ids.length) return;
+        // Fetch chi tiết từng sản phẩm
+        const results = await Promise.all(ids.map(async (id) => {
+          // Sử dụng API lấy full thông tin sản phẩm
+          const res = await import("@/features/products/api");
+          const product = await res.productApi.full(id);
+          // Chuyển về BasketItem
+          return {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: 1,
+            imageUrl: product.images?.[0] || { url: "/placeholder.png", alt: product.name, isMain: true, publicId: "" },
+          };
+        }));
+        setProductList(results);
+        // Khởi tạo số lượng
+        const initial: Record<string, number> = {};
+        results.forEach((p: BasketItem) => { initial[p.id] = p.quantity; });
+        setQuantities(initial);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Lỗi lấy sản phẩm từ localStorage:", err);
+      }
+    }
+    // Nếu products rỗng hoặc không có, thì fetch từ localStorage
+    if (!products || products.length === 0) {
+      fetchProductsFromLocalStorage();
+    } else {
+      setProductList(products);
+      const initial: Record<string, number> = {};
+      products.forEach((p: BasketItem) => { initial[p.id] = p.quantity; });
+      setQuantities(initial);
+    }
   }, [products]);
   const [specialRequests, setSpecialRequests] = useState({
     transferData: false,
@@ -42,6 +83,7 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [agree, setAgree] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const userId = getUserIdFromToken() ?? "";
   const createOrderMutation = useCreateOrder();
@@ -64,7 +106,7 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
 
   // Tổng hợp note
   function getNote() {
-    let note = "Yêu cầu đặc biệt";
+    let note = "";
     if (specialRequests.invoice) note += "\nXuất hóa đơn công ty";
     if (specialRequests.other && specialRequests.otherText) note += `\nYêu cầu khác: ${specialRequests.otherText}`;
     return note;
@@ -73,6 +115,11 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
   // Xử lý đặt hàng
   const handleOrder = async () => {
     if (!agree || productList.length === 0 || !userId) return;
+    if (!shippingInfo.name || !shippingInfo.address || !shippingInfo.phone) {
+      setErrorMessage("Vui lòng nhập đầy đủ thông tin nhận hàng!");
+      setTimeout(() => setErrorMessage(""), 3000);
+      return;
+    }
     const items = productList.map(p => ({
       productId: p.id,
       productName: p.name,
@@ -85,12 +132,15 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
         discountTotal: 0, // Có thể xử lý giảm giá nếu có
         shippingFee: 0, // Có thể bổ sung nếu có
         note: getNote(),
+        address: shippingInfo.address,
+        name: shippingInfo.name,
+        phone: shippingInfo.phone,
         items,
       });
-      // Sau khi đặt hàng thành công, quay về trang đơn hàng hoặc trang chủ
       router.push("/customer/orders");
     } catch (err) {
-      alert((err as Error).message || "Đặt hàng thất bại");
+      setErrorMessage((err as Error).message || "Đặt hàng thất bại");
+      setTimeout(() => setErrorMessage(""), 3000);
     }
   };
 
@@ -99,11 +149,21 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
       <div className="max-w-xl mx-auto bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800 p-6">
         <BackButton fallbackHref="/" className="mb-4" />
         {/* Địa chỉ nhận hàng */}
-        <div className="mb-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 flex items-center gap-3">
+        <div className="mb-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 flex items-center gap-3 cursor-pointer" onClick={() => setShowAddressModal(true)}>
           <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" /><circle cx="12" cy="11" r="3" /></svg>
-          <span>Vui lòng cung cấp thông tin nhận hàng</span>
-          <span className="ml-auto text-blue-600 dark:text-blue-400 font-medium cursor-pointer">Thành phố Hồ Chí Minh</span>
+          <span>
+            {shippingInfo.name && shippingInfo.address && shippingInfo.phone
+              ? `${shippingInfo.name} - ${shippingInfo.phone} - ${shippingInfo.address}`
+              : "Vui lòng cung cấp thông tin nhận hàng"}
+          </span>
         </div>
+
+        <ShippingInfoModal
+          open={showAddressModal}
+          onClose={() => setShowAddressModal(false)}
+          onSave={info => setShippingInfo(info)}
+          initialInfo={shippingInfo}
+        />
         {/* Sản phẩm */}
         {productList.map((product, idx) => (
           <div key={product.id} className="mb-4 bg-gray-50 dark:bg-neutral-800 rounded-xl p-4 border border-gray-200 dark:border-neutral-700">
@@ -189,6 +249,11 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
           <input type="checkbox" checked={agree} onChange={e => setAgree(e.target.checked)} />
           <span className="text-xs">Tôi đồng ý với <span className="text-blue-600 dark:text-blue-400 underline cursor-pointer">Chính sách xử lý dữ liệu cá nhân của E-Shop</span></span>
         </div>
+        {errorMessage && (
+          <div className="mb-3 px-4 py-2 rounded bg-red-100 text-red-700 text-center font-semibold animate-fade-in-out">
+            {errorMessage}
+          </div>
+        )}
         <button
           className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg disabled:opacity-60"
           disabled={!agree || productList.length === 0 || createOrderMutation.isPending}
@@ -198,5 +263,13 @@ export default function CheckoutPage({ products }: CheckoutPageProps) {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPageWrapper(props: CheckoutPageProps) {
+  return (
+    <ShippingInfoProvider>
+      <CheckoutPage {...props} />
+    </ShippingInfoProvider>
   );
 }

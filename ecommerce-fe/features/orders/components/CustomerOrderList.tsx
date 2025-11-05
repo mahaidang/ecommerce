@@ -2,7 +2,7 @@
 import { useCustomerOrdersPaging } from "../hooks";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Pagination from "@/features/products/shared/components/Pagination";
+import Pagination from "@/features/common/Pagination";
 
 
 function formatDate(date: string) {
