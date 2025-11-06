@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Shared.Contracts\Shared.Contracts.csproj" />
     <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.4.0" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="MassTransit" Version="8.5.5" />
     <PackageReference Include="MediatR" Version="13.0.0" />
     <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />

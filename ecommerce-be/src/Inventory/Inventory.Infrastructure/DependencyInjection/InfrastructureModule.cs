@@ -6,25 +6,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-
 namespace Inventory.Infrastructure.DependencyInjection;
 
 public static class InfrastructureModule
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
-        // ✅ EF Core
+        // ✅ EF Core (DbContext)
         services.AddDbContext<InventoryDbContext>(opt =>
             opt.UseSqlServer(config.GetConnectionString("Default")));
 
-        // Fix for CS0266 and CS1662:
-        // Use an explicit cast to IInventoryDbContext when resolving InventoryDbContext.
-        services.AddScoped<IInventoryDbContext>(sp => (IInventoryDbContext)sp.GetRequiredService<InventoryDbContext>());
+        // ✅ Interface mapping
+        services.AddScoped<IInventoryDbContext>(sp =>
+            sp.GetRequiredService<InventoryDbContext>());
 
-        // ✅ RabbitMQ
+        // ✅ MassTransit (RabbitMQ)
         services.AddMassTransit(x =>
         {
-            // Đăng ký các consumer
+            // Register consumers (các consumer xử lý event từ Orchestrator)
             x.AddConsumer<InventoryReserveConsumer>();
             x.AddConsumer<InventoryReleaseConsumer>();
 
@@ -36,18 +35,12 @@ public static class InfrastructureModule
                     h.Password(config["RabbitMq:Pass"] ?? "guest");
                 });
 
-                // Tự động tạo exchange/queue từ các consumer
+                // Auto-configure queue/exchange từ consumer
                 cfg.ConfigureEndpoints(context);
             });
         });
 
-        //services.AddSingleton<IConnection>(sp =>
-        //    sp.GetRequiredService<IConnectionFactory>().CreateConnection());
-
-        //// ✅ Background Worker (Saga)
-        //services.AddHostedService<InventorySagaConsumer>();
-
-        // ✅ gRPC
+        // ✅ gRPC (nếu có)
         services.AddGrpc();
 
         return services;
