@@ -1,5 +1,7 @@
 ﻿using MassTransit;
-using OrchestratorService.Worker.Messaging;
+using Shared.Contracts.Events;
+using Shared.Contracts.RoutingKeys;
+
 
 namespace Orchestrator.Worker.Consumers;
 
@@ -12,15 +14,17 @@ public class InventoryEventsConsumer : IConsumer<EventEnvelope<InventoryReserved
     {
         var env = context.Message;
         _log.LogInformation("✅ InventoryReserved: {OrderId}", env.OrderId);
-
-        var cmd = new EventEnvelope<CmdPaymentRequest>(
-            Rk.CmdPaymentRequest,
-            env.CorrelationId,
-            env.OrderId,
-            new CmdPaymentRequest(env.OrderId, 0, "VND"),
-            DateTime.UtcNow
-        );
-        await context.Publish(cmd);
+        if(env.Pay)
+        {
+            var cmd = new EventEnvelope<CmdPaymentRequest>(
+                Rk.CmdPaymentRequest,
+                env.CorrelationId,
+                env.OrderId,
+                new CmdPaymentRequest(env.OrderId, 0, "VND"),
+                DateTime.UtcNow
+            );
+            await context.Publish(cmd);
+        }
     }
 
     public async Task Consume(ConsumeContext<EventEnvelope<InventoryFailedData>> context)

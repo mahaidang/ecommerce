@@ -1,5 +1,6 @@
 ﻿using MassTransit;
-using OrchestratorService.Worker.Messaging;
+using Shared.Contracts.Events;
+using Shared.Contracts.RoutingKeys;
 namespace Orchestrator.Worker.Consumers;
 
 public class OrderCreatedConsumer : IConsumer<EventEnvelope<OrderCreatedData>>
@@ -27,16 +28,18 @@ public class OrderCreatedConsumer : IConsumer<EventEnvelope<OrderCreatedData>>
         );
 
         await context.Publish(reserve);
+        _log.LogInformation("📦 [Saga] Send OrderCreated to inventory: {OrderId}", env.OrderId);
 
-        // Gửi luôn yêu cầu thanh toán (tùy mô hình)
-        var pay = new EventEnvelope<CmdPaymentRequest>(
-            Rk.CmdPaymentRequest,
-            corrId,
-            env.OrderId,
-            new CmdPaymentRequest(env.OrderId, env.Data.GrandTotal, env.Data.Currency ?? "VND"),
-            DateTime.UtcNow
-        );
 
-        await context.Publish(pay);
+        //// Gửi luôn yêu cầu thanh toán (tùy mô hình)
+        //var pay = new EventEnvelope<o.CmdPaymentRequest>(
+        //    o.Rk.CmdPaymentRequest,
+        //    corrId,
+        //    env.OrderId,
+        //    new o.CmdPaymentRequest(env.OrderId, env.Data.GrandTotal, env.Data.Currency ?? "VND"),
+        //    DateTime.UtcNow
+        //);
+
+        //await context.Publish(pay);
     }
 }

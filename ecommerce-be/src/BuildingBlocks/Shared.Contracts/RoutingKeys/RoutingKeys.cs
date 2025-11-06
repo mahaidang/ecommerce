@@ -1,5 +1,4 @@
-﻿namespace OrchestratorService.Worker.Messaging;
-
+﻿namespace Shared.Contracts.RoutingKeys;
 public static class Rk
 {
     // events (domain)
@@ -10,6 +9,9 @@ public static class Rk
     public const string PaymentFailed = "payment.failed";
     public const string OrderConfirmed = "order.confirmed";
     public const string OrderFailed = "order.failed";
+    public const string AdminApproved = "admin.approved";
+    public const string AdminRejected = "admin.rejected";
+
 
     // commands (orchestrator -> participants)
     public const string CmdInventoryReserve = "cmd.inventory.reserve";

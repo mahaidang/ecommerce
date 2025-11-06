@@ -1,8 +1,8 @@
-﻿using MediatR;
+﻿using MassTransit;
+using MediatR;
 using Ordering.Application.Common;
 using Ordering.Domain.Entities;
-using System.Text.Json;
-using MassTransit;
+using Shared.Contracts.Events;
 
 
 namespace Ordering.Application.Orders.Command;
@@ -10,7 +10,7 @@ namespace Ordering.Application.Orders.Command;
 public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, CreateOrderResult>
 {
     private readonly IOrderingDbContext _db;
-    private readonly IPublishEndpoint _publisher;
+    private readonly IPublishEndpoint _publisher;   
 
     public CreateOrderHandler(IOrderingDbContext db, IPublishEndpoint publisher)
     {
@@ -80,7 +80,9 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             DateTime.UtcNow
         );
 
+        Console.WriteLine("✅ Begin Publish EventEnvelope<OrderCreatedData>");
         await _publisher.Publish(envelope, ct);
+        Console.WriteLine("✅ Published successfully");
 
 
         return new CreateOrderResult(order.Id, order.OrderNo, order.GrandTotal);
@@ -93,7 +95,7 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
     }
 }
 
-public record OrderItemData(Guid ProductId, string Name, int Quantity, decimal UnitPrice);
-public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal,
-    IReadOnlyList<OrderItemData> Items); 
-public record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid OrderId, T Data, DateTime utcNow);
+//public record OrderItemData(Guid ProductId, string Name, int Quantity, decimal UnitPrice);
+//public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal,
+//    IReadOnlyList<OrderItemData> Items); 
+//public record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid OrderId, T Data, DateTime utcNow);
