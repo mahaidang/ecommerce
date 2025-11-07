@@ -14,8 +14,8 @@ public sealed class UpdateStatusHandler : IRequestHandler<UpdateStatusCommand, b
     // Cho phép chuyển tiếp theo “bậc thang”
     private static readonly Dictionary<string, HashSet<string>> Allowed = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["Pending"] = new(StringComparer.OrdinalIgnoreCase) { "Confirmed", "Cancelled" },
-        ["Confirmed"] = new(StringComparer.OrdinalIgnoreCase) { "Paid", "Cancelled" },
+        ["Pending"] = new(StringComparer.OrdinalIgnoreCase) { "Confirmed", "Cancelled", "Paid" },
+        ["Confirmed"] = new(StringComparer.OrdinalIgnoreCase) { "Shipped", "Cancelled" },
         ["Paid"] = new(StringComparer.OrdinalIgnoreCase) { "Shipped", "Cancelled" },
         ["Shipped"] = new(StringComparer.OrdinalIgnoreCase) { "Completed" },
         ["Completed"] = new(StringComparer.OrdinalIgnoreCase) { },

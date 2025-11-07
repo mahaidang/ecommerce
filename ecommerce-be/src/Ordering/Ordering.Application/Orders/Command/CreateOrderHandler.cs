@@ -3,6 +3,7 @@ using MediatR;
 using Ordering.Application.Common;
 using Ordering.Domain.Entities;
 using Shared.Contracts.Events;
+using Shared.Contracts.RoutingKeys;
 
 
 namespace Ordering.Application.Orders.Command;
@@ -73,17 +74,14 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
         );
 
         var envelope = new EventEnvelope<OrderCreatedData>(
-            "order.created",
+            Rk.OrderCreated,
             Guid.NewGuid(), // correlationId
             order.Id,
             orderCreatedData,
             DateTime.UtcNow
         );
 
-        Console.WriteLine("✅ Begin Publish EventEnvelope<OrderCreatedData>");
         await _publisher.Publish(envelope, ct);
-        Console.WriteLine("✅ Published successfully");
-
 
         return new CreateOrderResult(order.Id, order.OrderNo, order.GrandTotal);
     }

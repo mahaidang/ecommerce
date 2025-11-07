@@ -1,32 +1,26 @@
-﻿using Autofac;
-using FluentValidation;
-using Identity.Application.Common.Behaviors;
+﻿using Identity.Application.Common.Behaviors;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Module = Autofac.Module;
 
 namespace Identity.Application.DependencyInjection;
 
-public class ApplicationModule : Module
+public static class ApplicationModule
 {
-    protected override void Load(ContainerBuilder builder)
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         var asm = Assembly.GetExecutingAssembly();
 
-        // MediatR handlers
-        builder.RegisterAssemblyTypes(asm)
-            .AsImplementedInterfaces()
-            .InstancePerLifetimeScope();
+        // ✅ MediatR handlers
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(asm));
 
-        // FluentValidation validators
-        builder.RegisterAssemblyTypes(asm)
-            .Where(t => t.IsClosedTypeOf(typeof(IValidator<>)))
-            .AsImplementedInterfaces()
-            .InstancePerLifetimeScope();
+        // ✅ FluentValidation validators
+        //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-        // Pipeline behaviors
-        builder.RegisterGeneric(typeof(ValidationBehavior<,>))
-            .As(typeof(IPipelineBehavior<,>))
-            .InstancePerLifetimeScope();
+        // ✅ Pipeline behaviors
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+
+        return services;
     }
 }

@@ -6,26 +6,25 @@ using Shared.Contracts.Events;
 
 namespace Inventory.Infrastructure.Consumers;
 
-public class CheckStockConsumer : IConsumer<EventEnvelope<CmdInventoryReserve>>
+public class CommitStockConsumer : IConsumer<EventEnvelope<CmdInventoryCommit>>
 {
     private readonly ISender _mediator;
-    private readonly ILogger<CmdInventoryReserve> _log;
+    private readonly ILogger<CmdInventoryCommit> _log;
 
 
-    public CheckStockConsumer(ISender mediator, ILogger<CmdInventoryReserve> log)
+    public CommitStockConsumer(ISender mediator, ILogger<CmdInventoryCommit> log)
     {
         _mediator = mediator;
         _log = log;
     }
 
-    public async Task Consume(ConsumeContext<EventEnvelope<CmdInventoryReserve>> context)
+    public async Task Consume(ConsumeContext<EventEnvelope<CmdInventoryCommit>> context)
     {
         var req = context.Message;
-        _log.LogInformation("CmdInventoryReserve", req.OrderId);
         await _mediator.Send(new ReserveStockCommand(req.OrderId,
         req.Data.Items.Select(i => new ReservedItem(i.ProductId, i.Quantity)).ToList(),
         req.CorrelationId,
         req.EventType,
         req.UtcNow));
-    }   
+    }
 }

@@ -36,3 +36,6 @@ public record PaymentSucceededData(string Provider, string TxnRef, decimal Amoun
 public record PaymentFailedData(string Provider, string Reason);
 
 public record   OrderApprovalResult(bool Approved, string? Note = null);
+
+//commit
+public record CmdInventoryCommit;

@@ -4,27 +4,40 @@ using Shared.Contracts.RoutingKeys;
 
 namespace Orchestrator.Worker.Consumers;
 
-internal class AdminEventsConsumer : IConsumer<EventEnvelope<OrderApprovalResult>>
+public class AdminEventsConsumer : IConsumer<EventEnvelope<OrderApprovalResult>>
 {
+
+    private readonly ILogger<AdminEventsConsumer> _log;
+    public AdminEventsConsumer(ILogger<AdminEventsConsumer> log) => _log = log;
     public async Task Consume(ConsumeContext<EventEnvelope<OrderApprovalResult>> context)
     {
         var env = context.Message;
-        object? cmd = null;
         if (env.Data.Approved)
         {
-            cmd = new CmdOrderUpdateStatus(env.OrderId, "Shipping");
+            var update = new EventEnvelope<CmdOrderUpdateStatus>(
+                Rk.CmdOrderUpdateStatus,
+                env.CorrelationId,
+                env.OrderId,
+                new CmdOrderUpdateStatus(env.OrderId, "Shipping"),
+                DateTime.UtcNow
+            );
+            await context.Publish(update);
+            _log.LogError("Saga → Order: approved");
+            var commit = new EventEnvelope<CmdInventoryCommit>(
+                Rk.CmdOrderUpdateStatus,
+                env.CorrelationId,
+                env.OrderId,
+                new CmdInventoryCommit(),
+                DateTime.UtcNow
+            );
+            await context.Publish(commit);
+            _log.LogError("Saga → inventory: commit");
+
         }
         else
         {
-            Console.WriteLine($"❌ Order {env.OrderId} rejected by admin. Note: {env.Data.Note}");
+            _log.LogError("Saga → Order: rejected", env.Data.Note);
         }
-        var update = new EventEnvelope<object?>(
-            Rk.CmdOrderUpdateStatus,
-            env.CorrelationId,
-            env.OrderId,
-            cmd,
-            DateTime.UtcNow
-        );
-        await context.Publish(update);
+        
     }
 }
