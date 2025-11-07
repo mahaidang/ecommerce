@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Identity.Application.Abstractions.Persistence;
+﻿using Identity.Application.Abstractions.Persistence;
 using Identity.Application.DependencyInjection;
 using Identity.Application.Features.Commands.Auth;
 using Identity.Infrastructure.DependencyInjection;
@@ -15,12 +13,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-builder.Host.ConfigureContainer<ContainerBuilder>(container =>
-{
-    container.RegisterModule(new ApplicationModule());
-    container.RegisterModule(new InfrastructureModule(builder.Configuration));
-});
+// Load 2 module chính
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
 

@@ -4,6 +4,7 @@ using Inventory.Infrastructure.Models;
 using Inventory.Infrastructure.Services;
 using InventoryService.Application.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,41 +25,41 @@ builder.Services.AddScoped<IInventoryDbContext>(sp => sp.GetRequiredService<Inve
 var app = builder.Build();
 
 app.UseSwagger(
-//    c =>
-//{
-//    c.PreSerializeFilters.Add((doc, req) =>
-//    {
-//        // Detect nếu request đến từ Gateway (qua port 5000)
-//        var isViaGateway = req.Host.Port == 5000 ||
-//                          req.Headers.ContainsKey("X-Forwarded-Prefix") ||
-//                          req.Headers["Referer"].ToString().Contains(":5000");
+    c =>
+{
+    c.PreSerializeFilters.Add((doc, req) =>
+    {
+        // Detect nếu request đến từ Gateway (qua port 5000)
+        var isViaGateway = req.Host.Port == 5000 ||
+                          req.Headers.ContainsKey("X-Forwarded-Prefix") ||
+                          req.Headers["Referer"].ToString().Contains(":5000");
 
-//        if (isViaGateway)
-//        {
-//            // Force URL qua Gateway
-//            doc.Servers = new List<OpenApiServer>
-//            {
-//                new OpenApiServer
-//                {
-//                    Url = "http://localhost:5000/api/inventory",
-//                    Description = "Via Gateway"
-//                }
-//            };
-//        }
-//        else
-//        {
-//            // Chạy trực tiếp service
-//            doc.Servers = new List<OpenApiServer>
-//            {
-//                new OpenApiServer
-//                {
-//                    Url = $"{req.Scheme}://{req.Host.Value}",
-//                    Description = "Direct Access"
-//                }
-//            };
-//        }
-//    });
-//}
+        if (isViaGateway)
+        {
+            // Force URL qua Gateway
+            doc.Servers = new List<OpenApiServer>
+            {
+                new OpenApiServer
+                {
+                    Url = "http://localhost:5000/api/inventory",
+                    Description = "Via Gateway"
+                }
+            };
+        }
+        else
+        {
+            // Chạy trực tiếp service
+            doc.Servers = new List<OpenApiServer>
+            {
+                new OpenApiServer
+                {
+                    Url = $"{req.Scheme}://{req.Host.Value}",
+                    Description = "Direct Access"
+                }
+            };
+        }
+    });
+}
 );
 
 app.UseSwaggerUI();

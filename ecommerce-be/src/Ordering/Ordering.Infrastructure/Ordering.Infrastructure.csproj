@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Inventory\**" />
+    <Compile Remove="Protos\**" />
+    <Compile Remove="Saga\**" />
+    <EmbeddedResource Remove="Inventory\**" />
+    <EmbeddedResource Remove="Protos\**" />
+    <EmbeddedResource Remove="Saga\**" />
+    <None Remove="Inventory\**" />
+    <None Remove="Protos\**" />
+    <None Remove="Saga\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.32.1" />
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
     <PackageReference Include="Grpc.Tools" Version="2.71.0">
@@ -23,10 +35,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Ordering.Application\Ordering.Application.csproj" />
     <ProjectReference Include="..\Ordering.Domain\Ordering.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Protos\inventory.proto" GrpcServices="Client" />
   </ItemGroup>
 
 
