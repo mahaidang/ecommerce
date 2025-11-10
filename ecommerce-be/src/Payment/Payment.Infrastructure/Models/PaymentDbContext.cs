@@ -3,11 +3,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Payment.Application.Abstractions.Persistence;
 using Payment.Domain.Entities;
 
 namespace Payment.Infrastructure.Models;
 
-public partial class PaymentDbContext : DbContext
+public partial class PaymentDbContext : DbContext, IPaymentDbContext
 {
     public PaymentDbContext(DbContextOptions<PaymentDbContext> options)
         : base(options)

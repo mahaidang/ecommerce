@@ -1,35 +1,52 @@
-﻿using MediatR;
+﻿using Azure.Core;
+using MediatR;
+using Payment.Application.Abstractions.Persistence;
+using Payment.Application.Features.Dtos;
+using Payment.Domain.Entities;
+using System.Text.Json;
 
 namespace Payment.Application.Features.Commands;
 
-public class SePayWebhookDto
-{
-    public string OrderCode { get; set; } = default!;
-    public decimal Amount { get; set; }
-    public string Status { get; set; } = default!;
-    public string TransactionId { get; set; } = default!;
-    public string Bank { get; set; } = default!;
-}
 
 public record HandleSePayWebhookCommand(SePayWebhookDto Payload) : IRequest;
 
 public class HandleSePayWebhookHandler : IRequestHandler<HandleSePayWebhookCommand>
 {
-    private readonly IOrderRepository _repo;
-    public HandleSePayWebhookHandler(IOrderRepository repo) => _repo = repo;
+    private readonly IPaymentRepository _repo;
+
+    public HandleSePayWebhookHandler(IPaymentRepository repo) => _repo = repo;
 
     public async Task Handle(HandleSePayWebhookCommand cmd, CancellationToken ct)
     {
-        var data = cmd.Payload;
-        var order = await _repo.GetByCodeAsync(data.OrderCode, ct);
-        if (order == null) return;
+        var payload = cmd.Payload;
 
-        if (data.Status == "success" && data.Amount == order.TotalPrice)
+        // 🔍 tìm payment khớp với nội dung chuyển khoản
+        var content = payload.Content ?? payload.Code ?? payload.ReferenceCode;
+        if (string.IsNullOrWhiteSpace(content))
         {
-            order.Status = OrderStatus.Paid;
-            order.PaidAt = DateTime.UtcNow;
-            order.PaymentMethod = "SePay";
-            await _repo.UpdateAsync(order, ct);
+            return;
         }
+
+        var payment = await _repo.FindByContentAsync(content, ct);
+        if (payment == null)
+        {
+            return;
+        }
+
+        payment.Status = "Completed";
+        payment.UpdatedAtUtc = DateTime.UtcNow;
+        await _repo.UpdateAsync(payment, ct);
+
+        await _repo.AddEventAsync(new PaymentEvent
+        {
+            Id = Guid.NewGuid(),
+            PaymentId = payment.Id,
+            EventType = "PaymentCompleted",
+            Data = System.Text.Json.JsonSerializer.Serialize(payload),
+            CreatedAtUtc = DateTime.UtcNow
+        }, ct);
+
+        return;
     }
 }
+

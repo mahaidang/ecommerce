@@ -7,26 +7,30 @@ namespace Payment.Infrastructure.External;
 
 public class SePayService : ISePayApi
 {
-    private readonly HttpClient _http;
     private readonly IConfiguration _config;
 
-    public SePayService(HttpClient http, IConfiguration config)
+    public SePayService(IConfiguration config)
     {
-        _http = http;
         _config = config;
     }
 
     public async Task<SePayPaymentResponse> CreatePaymentAsync(SePayPaymentRequest req, CancellationToken ct)
     {
-        var url = _config["SePay:BaseUrl"] + "/api/v1/payment/create";
-        var token = _config["SePay:ApiKey"];
+        var account = _config["SePay:AccountNo"];
+        var bank = _config["SePay:BankName"];
+        var amount = req.Amount;
+        var des = Uri.EscapeDataString(req.Description ?? req.OrderCode);
 
-        _http.DefaultRequestHeaders.Authorization = new("Bearer", token);
+        // Tạo link QR động theo chuẩn SePay
+        var qrUrl = $"https://qr.sepay.vn/img?acc={account}&bank={bank}&amount={amount}&des={des}";
 
-        var response = await _http.PostAsJsonAsync(url, req, ct);
-        response.EnsureSuccessStatusCode();
+        var res = new SePayPaymentResponse
+        {
+            QrUrl = qrUrl,
+            PaymentUrl = qrUrl, // dùng cùng giá trị
+            OrderCode = req.OrderCode
+        };
 
-        return await response.Content.ReadFromJsonAsync<SePayPaymentResponse>(ct)
-               ?? throw new InvalidOperationException("Invalid response from SePay");
+        return res;
     }
 }

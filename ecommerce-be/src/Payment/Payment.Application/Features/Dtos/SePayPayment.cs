@@ -11,6 +11,7 @@ public class SePayPaymentRequest
 
 public class SePayPaymentResponse
 {
+    public string QrUrl { get; set; } = default!;
     public string PaymentUrl { get; set; } = default!;
-    public string QrCode { get; set; } = default!;
+    public string OrderCode { get; set; } = default!;
 }
