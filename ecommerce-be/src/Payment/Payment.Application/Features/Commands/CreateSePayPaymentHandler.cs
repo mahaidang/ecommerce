@@ -1,19 +1,22 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Configuration;
 using Payment.Application.Abstractions.External;
+using Payment.Application.Abstractions.Persistence;
 using Payment.Application.Features.Dtos;
+using PaymentModel = Payment.Domain.Entities;
+using System.Text.Json;
 
 namespace Payment.Application.Features.Commands;
 
-public record CreateSePayPaymentCommand(Guid OrderId) : IRequest<SePayPaymentResponse>;
+public record CreateSePayPaymentCommand(Guid OrderId, decimal Amount) : IRequest<SePayPaymentResponse>;
 
 public class CreateSePayPaymentHandler : IRequestHandler<CreateSePayPaymentCommand, SePayPaymentResponse>
 {
-    private readonly IPay _repo;
+    private readonly IPaymentRepository _repo;
     private readonly ISePayApi _sepay;
     private readonly IConfiguration _config;
 
-    public CreateSePayPaymentHandler(IOrderRepository repo, ISePayApi sepay, IConfiguration config)
+    public CreateSePayPaymentHandler(IPaymentRepository repo, ISePayApi sepay, IConfiguration config)
     {
         _repo = repo;
         _sepay = sepay;
@@ -22,22 +25,43 @@ public class CreateSePayPaymentHandler : IRequestHandler<CreateSePayPaymentComma
 
     public async Task<SePayPaymentResponse> Handle(CreateSePayPaymentCommand cmd, CancellationToken ct)
     {
-        var order = await _repo.GetAsync(cmd.OrderId, ct)
-            ?? throw new Exception("Order not found");
+        // 1. Tạo bản ghi Payment pending
+        var payment = new PaymentModel.Payment
+        {
+            Id = Guid.NewGuid(),
+            OrderId = cmd.OrderId,
+            Amount = cmd.Amount,
+            Currency = "VND",
+            Status = "Pending",
+            Provider = "SePay",
+            CreatedAtUtc = DateTime.UtcNow,
+            UpdatedAtUtc = DateTime.UtcNow
+        };
+        await _repo.AddAsync(payment, ct);
 
+        // 2️⃣ Gọi SePayService để tạo QR link
         var req = new SePayPaymentRequest
         {
-            OrderCode = order.Code,
-            Amount = order.TotalPrice,
-            Description = $"Thanh toán đơn hàng {order.Code}",
-            ReturnUrl = _config["SePay:ReturnUrl"],
-            CancelUrl = _config["SePay:CancelUrl"]
+            OrderCode = $"DH{cmd.OrderId.ToString()[..8]}",
+            Amount = cmd.Amount,
+            Description = $"Thanh toán đơn hàng {cmd.OrderId}"
         };
 
         var res = await _sepay.CreatePaymentAsync(req, ct);
 
-        order.Status = OrderStatus.WaitingForPayment;
-        await _repo.UpdateAsync(order, ct);
+        // 3. Lưu link/QR vào ClientSecret
+        payment.ClientSecret = res.PaymentUrl;
+        await _repo.UpdateAsync(payment, ct);
+
+        // 4. Lưu sự kiện
+        await _repo.AddEventAsync(new PaymentModel.PaymentEvent
+        {
+            Id = Guid.NewGuid(),
+            PaymentId = payment.Id,
+            EventType = "PaymentCreated",
+            Data = JsonSerializer.Serialize(res),
+            CreatedAtUtc = DateTime.UtcNow
+        }, ct);
 
         return res;
     }

@@ -33,6 +33,10 @@
       {
         "Path": "src\\Identity\\Identity.Api\\Identity.Api.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "src\\Payment\\Payment.Api\\Payment.Api.csproj",
+        "Action": "Start"
       }
     ]
   }

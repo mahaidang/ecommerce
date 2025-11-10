@@ -21,10 +21,6 @@ public class CommitStockConsumer : IConsumer<EventEnvelope<CmdInventoryCommit>>
     public async Task Consume(ConsumeContext<EventEnvelope<CmdInventoryCommit>> context)
     {
         var req = context.Message;
-        await _mediator.Send(new ReserveStockCommand(req.OrderId,
-        req.Data.Items.Select(i => new ReservedItem(i.ProductId, i.Quantity)).ToList(),
-        req.CorrelationId,
-        req.EventType,
-        req.UtcNow));
+        await _mediator.Send(new CommitStockCommand(req.OrderId));
     }
 }

@@ -1,34 +1,33 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Payment.Application.Abstractions.Persistence;
+using Payment.Application.Features.Commands;
+using Payment.Application.Features.Dtos;
 using System.Text.Json;
 
 namespace Payment.Api.Controllers;
 
 [ApiController]
-[Route("api/webhooks/sepay")]
-public class SePayWebhookController : ControllerBase
+[Route("webhook/sepay")]
+public class WebhookController : ControllerBase
 {
-    private readonly IConfiguration _config;
     private readonly IMediator _mediator;
 
-    public SePayWebhookController(IMediator mediator, IConfiguration config)
-    {
-        _mediator = mediator;
-        _config = config;
-    }
+    public WebhookController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost]
-    public async Task<IActionResult> Receive([FromBody] SePayWebhookDto payload,
-                                             [FromHeader(Name = "x-sepay-signature")] string signature)
+    public async Task<IActionResult> ReceiveWebhook([FromBody] SePayWebhookDto   payload, CancellationToken ct)
     {
-        var secret = _config["SePay:Secret"];
-        var raw = JsonSerializer.Serialize(payload);
-        var computed = HmacHelper.ComputeHmac(secret, raw);
-
-        if (!computed.Equals(signature, StringComparison.OrdinalIgnoreCase))
-            return Unauthorized("Invalid signature");
-
-        await _mediator.Send(new HandleSePayWebhookCommand(payload));
-        return Ok("OK");
+        try
+        {
+            await _mediator.Send(new HandleSePayWebhookCommand(payload), ct);
+            // Phản hồi theo spec SePay: trả success true và status 201 (hoặc 200)
+            return StatusCode(201, new { success = true });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Webhook error: {ex.Message}");
+            return BadRequest();
+        }
     }
 }
