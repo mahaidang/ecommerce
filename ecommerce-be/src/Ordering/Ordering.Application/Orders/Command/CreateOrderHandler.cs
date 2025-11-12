@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Ordering.Application.Common;
 using Ordering.Domain.Entities;
 using Shared.Contracts.Events;
@@ -11,16 +12,19 @@ namespace Ordering.Application.Orders.Command;
 public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, CreateOrderResult>
 {
     private readonly IOrderingDbContext _db;
-    private readonly IPublishEndpoint _publisher;   
+    private readonly IPublishEndpoint _publisher;
+    private readonly ILogger<CreateOrderHandler> _log;
 
-    public CreateOrderHandler(IOrderingDbContext db, IPublishEndpoint publisher)
+    public CreateOrderHandler(IOrderingDbContext db, IPublishEndpoint publisher, ILogger<CreateOrderHandler> log)
     {
         _db = db;
         _publisher = publisher;
+        _log = log;
     }
 
     public async Task<CreateOrderResult> Handle(CreateOrderCommand req, CancellationToken ct)
     {
+        _log.LogError(req.Pay.ToString());
         if (req.Items is null || req.Items.Count == 0) 
             throw new ArgumentException("Items empty");
 
@@ -78,10 +82,12 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             Guid.NewGuid(), // correlationId
             order.Id,
             orderCreatedData,
-            DateTime.UtcNow
+            DateTime.UtcNow,
+            req.Pay
         );
 
         await _publisher.Publish(envelope, ct);
+        _log.LogError("Order -> Saga");
 
         return new CreateOrderResult(order.Id, order.OrderNo, order.GrandTotal);
     }
@@ -92,8 +98,3 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
         return $"ORD-{DateTime.UtcNow:yyyyMMdd}-{rand}";
     }
 }
-
-//public record OrderItemData(Guid ProductId, string Name, int Quantity, decimal UnitPrice);
-//public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal,
-//    IReadOnlyList<OrderItemData> Items); 
-//public record EventEnvelope<T>(string EventType, Guid CorrelationId, Guid OrderId, T Data, DateTime utcNow);

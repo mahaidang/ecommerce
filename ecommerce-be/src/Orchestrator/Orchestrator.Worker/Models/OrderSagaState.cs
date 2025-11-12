@@ -3,29 +3,31 @@
 using System;
 using System.Collections.Generic;
 
-namespace Payment.Domain.Entities;
+namespace Orchestrator.Worker.Models;
 
-public partial class Payment
+public partial class OrderSagaState
 {
     public Guid Id { get; set; }
-     
+
     public Guid OrderId { get; set; }
+
+    public Guid? CustomerId { get; set; }
 
     public decimal Amount { get; set; }
 
-    public string Currency { get; set; }
-
     public string Status { get; set; }
 
-    public string Provider { get; set; }
+    public bool InventoryReserved { get; set; }
 
-    public Guid? ProviderRef { get; set; }
+    public bool PaymentCompleted { get; set; }
 
-    public string ClientSecret { get; set; }
+    public bool IsFailed { get; set; }
+
+    public string FailReason { get; set; }
+
+    public int RetryCount { get; set; }
 
     public DateTime CreatedAtUtc { get; set; }
 
     public DateTime? UpdatedAtUtc { get; set; }
-
-    public virtual ICollection<PaymentEvent> PaymentEvents { get; set; } = new List<PaymentEvent>();
 }

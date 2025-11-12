@@ -1,9 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Payment.Application.Abstractions.Persistence;
 using Payment.Application.Features.Commands;
 using Payment.Application.Features.Dtos;
-using System.Text.Json;
 
 namespace Payment.Api.Controllers;
 
@@ -16,7 +14,7 @@ public class WebhookController : ControllerBase
     public WebhookController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost]
-    public async Task<IActionResult> ReceiveWebhook([FromBody] SePayWebhookDto   payload, CancellationToken ct)
+    public async Task<IActionResult> ReceiveWebhook([FromBody] SePayWebhookDto payload, CancellationToken ct)
     {
         try
         {

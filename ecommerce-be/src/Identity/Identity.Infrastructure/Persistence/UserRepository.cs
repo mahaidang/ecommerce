@@ -1,7 +1,6 @@
 ﻿using Identity.Application.Abstractions.Persistence;
 using Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Identity.Infrastructure.Persistence;
 
