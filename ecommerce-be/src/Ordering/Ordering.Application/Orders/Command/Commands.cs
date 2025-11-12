@@ -6,7 +6,8 @@ public record CreateOrderItemDto(Guid ProductId, string ProductName, decimal Uni
 public record CreateOrderCommand(
     Guid UserId, decimal DiscountTotal, decimal ShippingFee, string? Note,
     string Address, string Name, string Phone,
-    IReadOnlyList<CreateOrderItemDto> Items) : IRequest<CreateOrderResult>;
+    IReadOnlyList<CreateOrderItemDto> Items,
+    bool Pay = false) : IRequest<CreateOrderResult>;
 
 public record CreateOrderResult(Guid OrderId, string OrderNo, decimal? GrandTotal);
 

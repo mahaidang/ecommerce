@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Orchestrator.Worker.Repositories;
 using Shared.Contracts.Events;
 using Shared.Contracts.RoutingKeys;
 
@@ -7,23 +8,38 @@ namespace Orchestrator.Worker.Consumers;
 
 public class InventoryEventsConsumer : IConsumer<EventEnvelope<InventoryReservedData>>, IConsumer<EventEnvelope<InventoryFailedData>>
 {
-    private readonly ILogger<InventoryEventsConsumer> _log;
-    public InventoryEventsConsumer(ILogger<InventoryEventsConsumer> log) => _log = log;
+    private readonly ILogger<OrderCreatedConsumer> _log;
+    private readonly OrderSagaRepository _repo;
+    public InventoryEventsConsumer(ILogger<OrderCreatedConsumer> log, OrderSagaRepository repo)
+    {
+        _log = log;
+        _repo = repo;
+    }
 
     public async Task Consume(ConsumeContext<EventEnvelope<InventoryReservedData>> context)
     {
         var env = context.Message;
-        _log.LogInformation("✅ InventoryReserved: {OrderId}", env.OrderId);
-        if(env.Pay)
+        _log.LogError("Inven to saga");
+
+        var saga = await _repo.GetByOrderIdAsync(env.OrderId);
+        if (saga == null) return;
+
+        saga.InventoryReserved = true;
+        saga.Status = "AwaitingPayment";
+        await _repo.UpdateAsync(saga);
+
+        if (env.Pay)
         {
             var cmd = new EventEnvelope<CmdPaymentRequest>(
                 Rk.CmdPaymentRequest,
                 env.CorrelationId,
                 env.OrderId,
-                new CmdPaymentRequest(env.OrderId, 0, "VND"),
-                DateTime.UtcNow
+                new CmdPaymentRequest(env.OrderId, saga.Amount, "VND"),
+                DateTime.UtcNow,
+                env.Pay
             );
             await context.Publish(cmd);
+            _log.LogError("saga to payment");
         }
     }
 

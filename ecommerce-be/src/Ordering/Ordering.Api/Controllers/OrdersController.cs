@@ -11,8 +11,7 @@ namespace Ordering.Api.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IOrderingDbContext _db;
-    public OrdersController(IMediator mediator, IOrderingDbContext db) { _mediator = mediator; _db = db; }
+    public OrdersController(IMediator mediator, IOrderingDbContext db) { _mediator = mediator; }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateOrderCommand cmd, CancellationToken ct)

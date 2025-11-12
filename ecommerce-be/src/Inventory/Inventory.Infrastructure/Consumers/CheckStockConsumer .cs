@@ -21,11 +21,12 @@ public class CheckStockConsumer : IConsumer<EventEnvelope<CmdInventoryReserve>>
     public async Task Consume(ConsumeContext<EventEnvelope<CmdInventoryReserve>> context)
     {
         var req = context.Message;
-        _log.LogInformation("CmdInventoryReserve", req.OrderId);
+        _log.LogError("Saga -> Inventory");
         await _mediator.Send(new ReserveStockCommand(req.OrderId,
         req.Data.Items.Select(i => new ReservedItem(i.ProductId, i.Quantity)).ToList(),
         req.CorrelationId,
         req.EventType,
-        req.UtcNow));
+        req.UtcNow,
+        req.Pay));
     }   
 }

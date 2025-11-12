@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Payment.Application.Abstractions.External;
 using Payment.Application.Abstractions.Persistence;
 using Payment.Application.Features.Commands;
+using Payment.Infrastructure.Consumers;
 using Payment.Infrastructure.External;
 using Payment.Infrastructure.Models;
 using Payment.Infrastructure.Repository;
@@ -20,6 +22,24 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<CreateSePayPaymentCommand>());
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<ISePayApi, SePayService>();
+
+// ✅ Đăng ký MassTransit trực tiếp (thay toàn bộ RabbitMQ.Client thủ công)
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<PaymentConsumer>();
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMq:Host"] ?? "localhost", "/", h =>
+        {
+            h.Username(builder.Configuration["RabbitMq:User"] ?? "guest");
+            h.Password(builder.Configuration["RabbitMq:Pass"] ?? "guest");
+        });
+
+        // MassTransit tự tạo exchange/queue từ các consumer
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
 
 var app = builder.Build();
 

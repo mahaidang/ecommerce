@@ -32,7 +32,7 @@ public record OrderSucceeded(string Reason);
 
 
 // Payment
-public record PaymentSucceededData(string Provider, string TxnRef, decimal Amount, string Currency);
+public record PaymentSucceededData(string Provider, string TxnRef, decimal Amount);
 public record PaymentFailedData(string Provider, string Reason);
 
 public record   OrderApprovalResult(bool Approved, string? Note = null);

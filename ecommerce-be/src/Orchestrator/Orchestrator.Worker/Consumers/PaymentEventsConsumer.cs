@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Shared.Contracts.Events;
+using Shared.Contracts.RoutingKeys;
 
 namespace Orchestrator.Worker.Consumers;
 
@@ -12,20 +13,27 @@ public class PaymentEventsConsumer :
 
     public async Task Consume(ConsumeContext<EventEnvelope<PaymentSucceededData>> context)
     {
-        //var env = context.Message;
-        //_log.LogInformation("💰 PaymentSucceeded: {OrderId}", env.OrderId);
+        var env = context.Message;
+        _log.LogInformation("💰 PaymentSucceeded: {OrderId}", env.OrderId);
 
-        //var confirm = new EventEnvelope<object>(Rk.OrderConfirmed, env.CorrelationId, env.OrderId, new { }, DateTime.UtcNow);
-        //await context.Publish(confirm);
-
-        //var update = new EventEnvelope<CmdOrderUpdateStatus>(
-        //    Rk.CmdOrderUpdateStatus,
-        //    env.CorrelationId,    
-        //    env.OrderId,
-        //    new CmdOrderUpdateStatus(env.OrderId, "Paid"),
-        //    DateTime.UtcNow
-        //);
-        //await context.Publish(update);
+        var update = new EventEnvelope<CmdOrderUpdateStatus>(
+            Rk.CmdOrderUpdateStatus,
+            env.CorrelationId,
+            env.OrderId,
+            new CmdOrderUpdateStatus(env.OrderId, "Shipping"),
+            DateTime.UtcNow
+        );
+        await context.Publish(update);
+        _log.LogError("Saga → Order: approved");
+        var commit = new EventEnvelope<CmdInventoryCommit>(
+            Rk.CmdOrderUpdateStatus,
+            env.CorrelationId,
+            env.OrderId,
+            new CmdInventoryCommit(),
+            DateTime.UtcNow
+        );
+        await context.Publish(commit);
+        _log.LogError("Saga → inventory: commit");
     }
 
     public async Task Consume(ConsumeContext<EventEnvelope<PaymentFailedData>> context)

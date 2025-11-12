@@ -26,6 +26,8 @@ public static class InfrastructureModule
             // Register consumers (các consumer xử lý event từ Orchestrator)
             x.AddConsumer<InventoryReserveConsumer>();
             x.AddConsumer<InventoryReleaseConsumer>();
+            x.AddConsumer<CheckStockConsumer>();
+
 
             x.UsingRabbitMq((context, cfg) =>
             {

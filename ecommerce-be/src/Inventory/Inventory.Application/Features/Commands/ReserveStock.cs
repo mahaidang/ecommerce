@@ -12,8 +12,9 @@ public record ReserveStockCommand(
     Guid OrderId, 
     List<ReservedItem> Items, 
     Guid? CorrelationId,
-    string? eventType,
-    DateTime? utcNow) : IRequest<bool>;
+    string? EventType,
+    DateTime? UtcNow,
+    bool Pay) : IRequest<bool>;
 
 public class ReserveStockHandler : IRequestHandler<ReserveStockCommand, bool>
 {
@@ -40,7 +41,8 @@ public class ReserveStockHandler : IRequestHandler<ReserveStockCommand, bool>
                     req.CorrelationId ?? Guid.NewGuid(),
                     req.OrderId,
                     new InventoryFailedData("Out of Stock"),
-                    DateTime.UtcNow
+                    DateTime.UtcNow,
+                    req.Pay
                 );
                 await _publisher.Publish(fail);
                 return false;
@@ -74,7 +76,7 @@ public class ReserveStockHandler : IRequestHandler<ReserveStockCommand, bool>
             DateTime.UtcNow
         );
         await _publisher.Publish(reserve);
-        Console.WriteLine("✅ Inventory send");
+        Console.WriteLine("Saga -> Inventory");
 
         return true;
     }
