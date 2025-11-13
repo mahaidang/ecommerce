@@ -10,6 +10,7 @@ namespace Inventory.Application.Features.Commands;
 
 public record ReserveStockCommand(
     Guid OrderId, 
+    string OrderNo,
     List<ReservedItem> Items, 
     Guid? CorrelationId,
     string? EventType,
@@ -40,6 +41,7 @@ public class ReserveStockHandler : IRequestHandler<ReserveStockCommand, bool>
                     Rk.InventoryStockFailed,
                     req.CorrelationId ?? Guid.NewGuid(),
                     req.OrderId,
+                    req.OrderNo,
                     new InventoryFailedData("Out of Stock"),
                     DateTime.UtcNow,
                     req.Pay
@@ -72,8 +74,10 @@ public class ReserveStockHandler : IRequestHandler<ReserveStockCommand, bool>
             Rk.InventoryStockReserved,
             req.CorrelationId ?? Guid.NewGuid(),
             req.OrderId,
+            req.OrderNo,
             new InventoryReservedData(req.Items),
-            DateTime.UtcNow
+            DateTime.UtcNow,
+            req.Pay
         );
         await _publisher.Publish(reserve);
         Console.WriteLine("Saga -> Inventory");

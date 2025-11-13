@@ -15,7 +15,7 @@ public class PaymentsController : ControllerBase
     [HttpPost("sepay/{orderId:guid}")]
     public async Task<IActionResult> CreatePayment(Guid orderId, [FromBody] decimal amount)
     {
-        var result = await _mediator.Send(new CreateSePayPaymentCommand(orderId, amount));
+        var result = await _mediator.Send(new CreateSePayPaymentCommand(orderId,"", amount));
         return Ok(result);
     }
 }

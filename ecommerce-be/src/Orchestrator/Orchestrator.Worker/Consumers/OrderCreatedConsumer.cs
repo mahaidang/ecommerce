@@ -44,6 +44,7 @@ public class OrderCreatedConsumer : IConsumer<EventEnvelope<OrderCreatedData>>
             Rk.CmdInventoryReserve,
             corrId,
             env.OrderId,
+            env.OrderNo,
             new CmdInventoryReserve(
                 env.OrderId,
                 env.Data.Items.Select(i => new ReservedItem(i.ProductId, i.Quantity)).ToList()

@@ -14,26 +14,28 @@ public class PaymentEventsConsumer :
     public async Task Consume(ConsumeContext<EventEnvelope<PaymentSucceededData>> context)
     {
         var env = context.Message;
-        _log.LogInformation("💰 PaymentSucceeded: {OrderId}", env.OrderId);
+        _log.LogError("Payment -> saga");
 
         var update = new EventEnvelope<CmdOrderUpdateStatus>(
             Rk.CmdOrderUpdateStatus,
             env.CorrelationId,
             env.OrderId,
-            new CmdOrderUpdateStatus(env.OrderId, "Shipping"),
+            env.OrderNo,
+            new CmdOrderUpdateStatus(env.OrderId, "Shipped"),
             DateTime.UtcNow
         );
         await context.Publish(update);
-        _log.LogError("Saga → Order: approved");
+        _log.LogError("Saga -> order: update");
         var commit = new EventEnvelope<CmdInventoryCommit>(
             Rk.CmdOrderUpdateStatus,
             env.CorrelationId,
             env.OrderId,
+            env.OrderNo,
             new CmdInventoryCommit(),
             DateTime.UtcNow
         );
         await context.Publish(commit);
-        _log.LogError("Saga → inventory: commit");
+        _log.LogError("Saga -> inventory: commit");
     }
 
     public async Task Consume(ConsumeContext<EventEnvelope<PaymentFailedData>> context)

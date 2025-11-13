@@ -20,6 +20,7 @@ public class PaymentConsumer : IConsumer<EventEnvelope<CmdPaymentRequest>>
     public async Task Consume(ConsumeContext<EventEnvelope<CmdPaymentRequest>> context)
     {
         var req = context.Message;
-        await _mediator.Send(new CreateSePayPaymentCommand(req.OrderId, req.Data.Amount));
+        _log.LogError("saga -> payment");
+        await _mediator.Send(new CreateSePayPaymentCommand(req.OrderId, req.OrderNo, req.Data.Amount));
     }
 }
