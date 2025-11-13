@@ -5,22 +5,23 @@ using Payment.Application.Abstractions.Persistence;
 using Payment.Application.Features.Dtos;
 using PaymentModel = Payment.Domain.Entities;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace Payment.Application.Features.Commands;
 
-public record CreateSePayPaymentCommand(Guid OrderId, decimal Amount) : IRequest<SePayPaymentResponse>;
+public record CreateSePayPaymentCommand(Guid OrderId, string OrderNo, decimal Amount) : IRequest<SePayPaymentResponse>;
 
 public class CreateSePayPaymentHandler : IRequestHandler<CreateSePayPaymentCommand, SePayPaymentResponse>
 {
     private readonly IPaymentRepository _repo;
     private readonly ISePayApi _sepay;
-    private readonly IConfiguration _config;
+    private readonly ILogger<CreateSePayPaymentHandler> _log;
 
-    public CreateSePayPaymentHandler(IPaymentRepository repo, ISePayApi sepay, IConfiguration config)
+    public CreateSePayPaymentHandler(IPaymentRepository repo, ISePayApi sepay, IConfiguration config, ILogger<CreateSePayPaymentHandler> log)
     {
         _repo = repo;
         _sepay = sepay;
-        _config = config;
+        _log = log;
     }
 
     public async Task<SePayPaymentResponse> Handle(CreateSePayPaymentCommand cmd, CancellationToken ct)
@@ -30,6 +31,7 @@ public class CreateSePayPaymentHandler : IRequestHandler<CreateSePayPaymentComma
         {
             Id = Guid.NewGuid(),
             OrderId = cmd.OrderId,
+            OrderNo = cmd.OrderNo,
             Amount = cmd.Amount,
             Currency = "VND",
             Status = "Pending",
@@ -42,9 +44,9 @@ public class CreateSePayPaymentHandler : IRequestHandler<CreateSePayPaymentComma
         // 2️⃣ Gọi SePayService để tạo QR link
         var req = new SePayPaymentRequest
         {
-            OrderCode = $"DH{cmd.OrderId.ToString()[..8]}",
+            OrderCode = $"ORD{cmd.OrderNo.ToString()[..8]}",
             Amount = cmd.Amount,
-            Description = $"Thanh toán đơn hàng {cmd.OrderId}"
+            Description = $"Thanh toán đơn hàng {cmd.OrderNo}"
         };
 
         var res = await _sepay.CreatePaymentAsync(req, ct);

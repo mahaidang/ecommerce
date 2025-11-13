@@ -34,12 +34,13 @@ public class InventoryEventsConsumer : IConsumer<EventEnvelope<InventoryReserved
                 Rk.CmdPaymentRequest,
                 env.CorrelationId,
                 env.OrderId,
+                env.OrderNo,
                 new CmdPaymentRequest(env.OrderId, saga.Amount, "VND"),
                 DateTime.UtcNow,
                 env.Pay
             );
             await context.Publish(cmd);
-            _log.LogError("saga to payment");
+            _log.LogError("saga -> payment");
         }
     }
 
@@ -52,6 +53,7 @@ public class InventoryEventsConsumer : IConsumer<EventEnvelope<InventoryReserved
             Rk.CmdOrderUpdateStatus,
             env.CorrelationId,
             env.OrderId,
+            env.OrderNo,
             new CmdOrderUpdateStatus(env.OrderId, "Cancelled"),
             DateTime.UtcNow
         );

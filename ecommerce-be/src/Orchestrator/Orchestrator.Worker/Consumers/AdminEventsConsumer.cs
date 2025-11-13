@@ -18,6 +18,7 @@ public class AdminEventsConsumer : IConsumer<EventEnvelope<OrderApprovalResult>>
                 Rk.CmdOrderUpdateStatus,
                 env.CorrelationId,
                 env.OrderId,
+                env.OrderNo,
                 new CmdOrderUpdateStatus(env.OrderId, "Shipping"),
                 DateTime.UtcNow
             );
@@ -27,6 +28,7 @@ public class AdminEventsConsumer : IConsumer<EventEnvelope<OrderApprovalResult>>
                 Rk.CmdOrderUpdateStatus,
                 env.CorrelationId,
                 env.OrderId,
+                env.OrderNo,
                 new CmdInventoryCommit(),
                 DateTime.UtcNow
             );

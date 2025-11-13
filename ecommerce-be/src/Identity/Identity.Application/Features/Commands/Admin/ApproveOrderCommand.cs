@@ -25,6 +25,7 @@ public class ApproveOrderHandler : IRequestHandler<ApproveOrderCommand, Unit>
             request.Approved ? Rk.AdminApproved : Rk.AdminRejected,
             Guid.NewGuid(),
             request.OrderId,
+            "",
             new OrderApprovalResult(request.Approved, request.note),
             DateTime.UtcNow
         );

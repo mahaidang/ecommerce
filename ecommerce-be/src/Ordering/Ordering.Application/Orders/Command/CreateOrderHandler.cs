@@ -81,6 +81,7 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             Rk.OrderCreated,
             Guid.NewGuid(), // correlationId
             order.Id,
+            order.OrderNo,
             orderCreatedData,
             DateTime.UtcNow,
             req.Pay
@@ -94,7 +95,7 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
 
     private static string GenOrderNo()
     {
-        var rand = Random.Shared.Next(1000, 9999);
-        return $"ORD-{DateTime.UtcNow:yyyyMMdd}-{rand}";
+        var rand = Random.Shared.Next(10000, 99999);
+        return $"ORD{DateTime.UtcNow:yyyyMMdd}{rand}";
     }
 }

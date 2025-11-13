@@ -8,5 +8,5 @@ public interface IPaymentRepository
     Task UpdateAsync(PaymentModel.Payment payment, CancellationToken ct);
     Task<PaymentModel.Payment?> GetByOrderIdAsync(Guid orderId, CancellationToken ct);
     Task AddEventAsync(PaymentModel.PaymentEvent evt, CancellationToken ct);
-    Task<PaymentModel.Payment?> FindByContentAsync(string content, CancellationToken ct);
+    Task<PaymentModel.Payment?> FindByContentAsync(string content);
 }

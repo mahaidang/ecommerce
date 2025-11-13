@@ -8,7 +8,7 @@ namespace Payment.Domain.Entities;
 public partial class Payment
 {
     public Guid Id { get; set; }
-     
+
     public Guid OrderId { get; set; }
 
     public decimal Amount { get; set; }
@@ -26,6 +26,8 @@ public partial class Payment
     public DateTime CreatedAtUtc { get; set; }
 
     public DateTime? UpdatedAtUtc { get; set; }
+
+    public string OrderNo { get; set; }
 
     public virtual ICollection<PaymentEvent> PaymentEvents { get; set; } = new List<PaymentEvent>();
 }

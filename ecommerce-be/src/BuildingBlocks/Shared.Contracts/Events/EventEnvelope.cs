@@ -4,6 +4,7 @@ public record EventEnvelope<T>(
     string EventType,
     Guid CorrelationId,
     Guid OrderId,
+    string OrderNo,
     T Data,
     DateTime UtcNow,
     bool Pay = false

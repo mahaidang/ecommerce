@@ -41,11 +41,10 @@ public class PaymentRepository : IPaymentRepository
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task<PaymentModel.Payment?> FindByContentAsync(string content, CancellationToken ct)
+    public async Task<PaymentModel.Payment?> FindByContentAsync(string content)
     {
         return await _db.Payments
             .FirstOrDefaultAsync(p =>
-                p.ClientSecret.Contains(content) ||
-                p.OrderId.ToString().Contains(content), ct);
+                p.OrderNo.Contains(content));
     }
 }

@@ -27,6 +27,7 @@ public static class InfrastructureModule
             x.AddConsumer<InventoryReserveConsumer>();
             x.AddConsumer<InventoryReleaseConsumer>();
             x.AddConsumer<CheckStockConsumer>();
+            x.AddConsumer<CommitStockConsumer>();
 
 
             x.UsingRabbitMq((context, cfg) =>

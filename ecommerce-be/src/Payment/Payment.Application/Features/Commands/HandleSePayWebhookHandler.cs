@@ -30,12 +30,14 @@ public class HandleSePayWebhookHandler : IRequestHandler<HandleSePayWebhookComma
         var content = payload.Content ?? payload.Code ?? payload.ReferenceCode;
         if (string.IsNullOrWhiteSpace(content))
         {
+            await PublishFail(Guid.Empty, content, "Sepay", "PaymentRecordNotFound");
             return;
         }
 
-        var payment = await _repo.FindByContentAsync(content, ct);
+        var payment = await _repo.FindByContentAsync(content);
         if (payment == null)
         {
+            await PublishFail(Guid.Empty, content, "Sepay", "PaymentRecordNotFound");
             return;
         }
 
@@ -43,6 +45,7 @@ public class HandleSePayWebhookHandler : IRequestHandler<HandleSePayWebhookComma
             Rk.PaymentSucceeded,
             Guid.NewGuid(),
             payment.OrderId,
+            payment.OrderNo,
             new PaymentSucceededData("SePay", payment.OrderId.ToString(), payment.Amount),
             DateTime.UtcNow
         );
@@ -62,6 +65,23 @@ public class HandleSePayWebhookHandler : IRequestHandler<HandleSePayWebhookComma
         }, ct);
 
         return;
+    }
+
+    // Helper publish failure
+    private Task PublishFail(Guid orderId, string orderNo, string provider, string reason)
+    {
+        var failedData = new PaymentFailedData(provider, reason);
+
+        return _publisher.Publish(
+            new EventEnvelope<PaymentFailedData>(
+                EventType: "PaymentFailed",
+                CorrelationId: Guid.NewGuid(),
+                OrderId: orderId,
+                OrderNo: orderNo,
+                Data: failedData,
+                UtcNow: DateTime.UtcNow
+            )
+        );
     }
 }
 

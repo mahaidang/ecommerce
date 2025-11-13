@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Payment.Application.Abstractions.External;
 using Payment.Application.Features.Dtos;
-using System.Net.Http.Json;
 
 namespace Payment.Infrastructure.External;
 
@@ -18,7 +17,7 @@ public class SePayService : ISePayApi
     {
         var account = _config["SePay:AccountNo"];
         var bank = _config["SePay:BankName"];
-        var amount = req.Amount;
+        var amount = req.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var des = Uri.EscapeDataString(req.Description ?? req.OrderCode);
 
         // Tạo link QR động theo chuẩn SePay
