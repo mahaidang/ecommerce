@@ -35,7 +35,7 @@ public class InventoryEventsConsumer : IConsumer<EventEnvelope<InventoryReserved
                 env.CorrelationId,
                 env.OrderId,
                 env.OrderNo,
-                new CmdPaymentRequest(env.OrderId, saga.Amount, "VND"),
+                new CmdPaymentRequest(saga.Amount, "VND"),
                 DateTime.UtcNow,
                 env.Pay
             );
@@ -54,7 +54,7 @@ public class InventoryEventsConsumer : IConsumer<EventEnvelope<InventoryReserved
             env.CorrelationId,
             env.OrderId,
             env.OrderNo,
-            new CmdOrderUpdateStatus(env.OrderId, "Cancelled"),
+            new CmdOrderUpdateStatus("Cancelled"),
             DateTime.UtcNow
         );
         await context.Publish(cancel);

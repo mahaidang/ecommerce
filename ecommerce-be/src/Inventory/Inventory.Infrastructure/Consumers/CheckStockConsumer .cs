@@ -23,7 +23,7 @@ public class CheckStockConsumer : IConsumer<EventEnvelope<CmdInventoryReserve>>
         var req = context.Message;
         _log.LogError("Saga -> Inventory");
         await _mediator.Send(new ReserveStockCommand(req.OrderId, req.OrderNo,
-        req.Data.Items.Select(i => new ReservedItem(i.ProductId, i.Quantity)).ToList(),
+        req.Data.Items.ToList(),
         req.CorrelationId,
         req.EventType,
         req.UtcNow,

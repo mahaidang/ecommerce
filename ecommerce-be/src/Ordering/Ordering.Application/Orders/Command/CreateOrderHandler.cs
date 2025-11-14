@@ -73,7 +73,7 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Cre
             "VND", // currency
             order.GrandTotal ?? 0,
             order.OrderItems.Select(x =>
-                new OrderItemData(x.ProductId, x.ProductName, x.Quantity, x.UnitPrice)
+                new ItemData(x.ProductId, x.Quantity)
             ).ToList()
         );
 

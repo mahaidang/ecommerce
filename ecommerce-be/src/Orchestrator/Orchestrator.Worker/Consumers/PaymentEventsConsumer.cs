@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Orchestrator.Worker.Repositories;
 using Shared.Contracts.Events;
 using Shared.Contracts.RoutingKeys;
 
@@ -9,19 +10,35 @@ public class PaymentEventsConsumer :
     IConsumer<EventEnvelope<PaymentFailedData>>
 {
     private readonly ILogger<PaymentEventsConsumer> _log;
-    public PaymentEventsConsumer(ILogger<PaymentEventsConsumer> log) => _log = log;
+    private readonly OrderSagaRepository _repo;
+
+    public PaymentEventsConsumer(ILogger<PaymentEventsConsumer> log, OrderSagaRepository repo)
+    {
+        _log = log;
+        _repo = repo;
+    }
 
     public async Task Consume(ConsumeContext<EventEnvelope<PaymentSucceededData>> context)
     {
         var env = context.Message;
         _log.LogError("Payment -> saga");
+        var saga = await _repo.GetByOrderIdAsync(env.OrderId);
+        var items = new List<ItemData>();
+
+        foreach (var i in saga.OrderSagaItems)
+        {
+            items.Add(new ItemData(
+                i.ProductId,
+                i.Quantity
+            ));
+        }
 
         var update = new EventEnvelope<CmdOrderUpdateStatus>(
             Rk.CmdOrderUpdateStatus,
             env.CorrelationId,
             env.OrderId,
             env.OrderNo,
-            new CmdOrderUpdateStatus(env.OrderId, "Shipped"),
+            new CmdOrderUpdateStatus("Shipped"),
             DateTime.UtcNow
         );
         await context.Publish(update);
@@ -31,7 +48,7 @@ public class PaymentEventsConsumer :
             env.CorrelationId,
             env.OrderId,
             env.OrderNo,
-            new CmdInventoryCommit(),
+            new CmdInventoryCommit(items),
             DateTime.UtcNow
         );
         await context.Publish(commit);
@@ -40,21 +57,37 @@ public class PaymentEventsConsumer :
 
     public async Task Consume(ConsumeContext<EventEnvelope<PaymentFailedData>> context)
     {
-        //var env = context.Message;
-        //_log.LogWarning("💳 PaymentFailed: {OrderId} - {Reason}", env.OrderId, env.Data.Reason);
+        var env = context.Message;
+        _log.LogError("Payment -> saga");
+        var saga = await _repo.GetByOrderIdAsync(env.OrderId );
+        var items = new List<ItemData>();
 
-        //var rel = new EventEnvelope<CmdInventoryRelease>(
-        //    Rk.CmdInventoryRelease, env.CorrelationId, env.OrderId,
-        //    new CmdInventoryRelease(env.OrderId, new List<ReservedItem>()),
-        //    DateTime.UtcNow
-        //);
-        //await context.Publish(rel);
+        foreach (var i in saga.OrderSagaItems)
+        {
+            items.Add(new ItemData(
+                i.ProductId,
+                i.Quantity
+            ));
+        }
 
-        //var cancel = new EventEnvelope<CmdOrderUpdateStatus>(
-        //    Rk.CmdOrderUpdateStatus, env.CorrelationId, env.OrderId,
-        //    new CmdOrderUpdateStatus(env.OrderId, "Cancelled"),
-        //    DateTime.UtcNow
-        //);
-        //await context.Publish(cancel);
+        var rel = new EventEnvelope<CmdInventoryRelease>(
+            Rk.CmdInventoryRelease,
+            env.CorrelationId,
+            env.OrderId,
+            env.OrderNo,
+            new CmdInventoryRelease(items),
+            DateTime.UtcNow
+        );
+        await context.Publish(rel);
+
+        var cancel = new EventEnvelope<CmdOrderUpdateStatus>(
+            Rk.CmdOrderUpdateStatus,
+            env.CorrelationId,
+            env.OrderId,
+            env.OrderNo,
+            new CmdOrderUpdateStatus("Cancelled"),
+            DateTime.UtcNow
+        );
+        await context.Publish(cancel);
     }
 }

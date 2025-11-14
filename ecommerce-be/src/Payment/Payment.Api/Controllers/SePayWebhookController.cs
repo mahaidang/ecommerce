@@ -10,12 +10,32 @@ namespace Payment.Api.Controllers;
 public class WebhookController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IConfiguration _config;
 
-    public WebhookController(IMediator mediator) => _mediator = mediator;
+
+    public WebhookController(IMediator mediator, IConfiguration config)
+    {
+        _config = config;
+        _mediator = mediator;
+    }
 
     [HttpPost]
     public async Task<IActionResult> ReceiveWebhook([FromBody] SePayWebhookDto payload)
     {
+        var sepaySection = _config.GetSection("SePay");
+        var secret = sepaySection["Secret"];
+
+        // Lấy API Key từ header
+        if (!Request.Headers.TryGetValue("Authorization", out var apiKey))
+        {
+            return Unauthorized("Missing API Key");
+        }
+
+        // So sánh với key cấu hình
+        if (apiKey != secret)
+        {
+            return Unauthorized("Invalid API Key");
+        }
         try
         {
             await _mediator.Send(new HandleSePayWebhookCommand(payload));

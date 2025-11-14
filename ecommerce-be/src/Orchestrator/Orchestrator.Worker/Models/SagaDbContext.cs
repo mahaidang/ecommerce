@@ -13,10 +13,28 @@ public partial class SagaDbContext : DbContext
     {
     }
 
+    public virtual DbSet<OrderSagaItem> OrderSagaItems { get; set; }
+
     public virtual DbSet<OrderSagaState> OrderSagaStates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<OrderSagaItem>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__OrderSag__3214EC07E8CC6BF9");
+
+            entity.ToTable("OrderSagaItems", "saga");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAtUtc).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.UpdatedAtUtc).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.SagaState).WithMany(p => p.OrderSagaItems)
+                .HasForeignKey(d => d.SagaStateId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_OrderSagaItems_SagaState");
+        });
+
         modelBuilder.Entity<OrderSagaState>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__OrderSag__3214EC07F5BE0043");

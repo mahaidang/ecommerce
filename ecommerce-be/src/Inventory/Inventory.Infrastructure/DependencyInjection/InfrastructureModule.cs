@@ -24,8 +24,7 @@ public static class InfrastructureModule
         services.AddMassTransit(x =>
         {
             // Register consumers (các consumer xử lý event từ Orchestrator)
-            x.AddConsumer<InventoryReserveConsumer>();
-            x.AddConsumer<InventoryReleaseConsumer>();
+            x.AddConsumer<ReleaseConsumer>();
             x.AddConsumer<CheckStockConsumer>();
             x.AddConsumer<CommitStockConsumer>();
 

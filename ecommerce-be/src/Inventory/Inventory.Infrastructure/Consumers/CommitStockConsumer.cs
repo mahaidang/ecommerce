@@ -20,7 +20,7 @@ public class CommitStockConsumer : IConsumer<EventEnvelope<CmdInventoryCommit>>
 
     public async Task Consume(ConsumeContext<EventEnvelope<CmdInventoryCommit>> context)
     {
-        var req = context.Message;
-        await _mediator.Send(new CommitStockCommand(req.OrderId));
+        var env = context.Message;
+        await _mediator.Send(new CommitStockCommand(env.OrderId, env.Data.Items.ToList()));
     }
 }

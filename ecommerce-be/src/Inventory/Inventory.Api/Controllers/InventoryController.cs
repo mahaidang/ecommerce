@@ -12,7 +12,7 @@ public class InventoryController : ControllerBase
     public InventoryController(ISender mediator) => _mediator = mediator;
 
     [HttpPost("restock")]
-    public async Task<IActionResult> Restock(RestockCommand cmd)
+    public async Task<IActionResult> Restock(RestockCommandCommand cmd)
     {
         await _mediator.Send(cmd);
         return Ok();

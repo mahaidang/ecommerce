@@ -30,7 +30,6 @@ public class OrderCreatedConsumer : IConsumer<EventEnvelope<OrderCreatedData>>
             CustomerId = env.Data.UserId,
             Status = "AwaitingInventory"
         };
-        await _repo.SaveAsync(saga);
 
         if (env.Data?.Items == null)
         {
@@ -38,6 +37,18 @@ public class OrderCreatedConsumer : IConsumer<EventEnvelope<OrderCreatedData>>
             return;
         }
 
+        foreach (var item in env.Data.Items)
+        {
+            saga.OrderSagaItems.Add(new OrderSagaItem
+            {
+                Id = Guid.NewGuid(),
+                SagaStateId = saga.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity
+            });
+        }
+
+        await _repo.SaveAsync(saga);
 
         // Gửi command: cmd.inventory.reserve
         var reserve = new EventEnvelope<CmdInventoryReserve>(
@@ -45,10 +56,7 @@ public class OrderCreatedConsumer : IConsumer<EventEnvelope<OrderCreatedData>>
             corrId,
             env.OrderId,
             env.OrderNo,
-            new CmdInventoryReserve(
-                env.OrderId,
-                env.Data.Items.Select(i => new ReservedItem(i.ProductId, i.Quantity)).ToList()
-            ),
+            new CmdInventoryReserve(env.Data.Items),
             DateTime.UtcNow,
             env.Pay
         );
