@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Application.Features.Commands;
 
-public record RestockCommand(Guid ProductId, Guid WarehouseId, int Quantity) : IRequest;
+public record RestockCommandCommand(Guid ProductId, Guid WarehouseId, int Quantity) : IRequest;
 
-public class RestockHandler : IRequestHandler<RestockCommand>
+public class RestockHandler : IRequestHandler<RestockCommandCommand>
 {
     private readonly IInventoryDbContext _db;
     public RestockHandler(IInventoryDbContext db) => _db = db;
 
-    public async Task Handle(RestockCommand cmd, CancellationToken ct)
+    public async Task Handle(RestockCommandCommand cmd, CancellationToken ct)
     {
         var stock = await _db.Stocks
             .FirstOrDefaultAsync(s => s.ProductId == cmd.ProductId && s.WarehouseId == cmd.WarehouseId, ct);

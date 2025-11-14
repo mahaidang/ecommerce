@@ -30,17 +30,21 @@ public class HandleSePayWebhookHandler : IRequestHandler<HandleSePayWebhookComma
         var content = payload.Content ?? payload.Code ?? payload.ReferenceCode;
         if (string.IsNullOrWhiteSpace(content))
         {
-            await PublishFail(Guid.Empty, content, "Sepay", "PaymentRecordNotFound");
             return;
         }
 
         var payment = await _repo.FindByContentAsync(content);
         if (payment == null)
         {
-            await PublishFail(Guid.Empty, content, "Sepay", "PaymentRecordNotFound");
             return;
         }
 
+        if(payload.TransferAmount < payment.Amount)
+        {
+            await PublishFail(Guid.Empty, content, "Sepay", "PaymentAmountNotEnough");
+            return;
+        }
+        
         var evt = new EventEnvelope<PaymentSucceededData>(
             Rk.PaymentSucceeded,
             Guid.NewGuid(),

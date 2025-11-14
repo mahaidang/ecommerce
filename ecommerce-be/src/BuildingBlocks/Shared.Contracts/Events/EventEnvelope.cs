@@ -1,5 +1,6 @@
 ﻿namespace Shared.Contracts.Events;
 
+// Event Envelope (wrapper)
 public record EventEnvelope<T>(
     string EventType,
     Guid CorrelationId,
@@ -10,33 +11,32 @@ public record EventEnvelope<T>(
     bool Pay = false
 );
 
-public record OrderItemData(Guid ProductId, string Name, int Quantity, decimal UnitPrice);
+// ITEM DATA
+public record ItemData(Guid ProductId, int Quantity);
 
-public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal, IReadOnlyList<OrderItemData> Items );
+// 1) ORDER EVENTS
 
-public record CmdInventoryReserve(Guid OrderId, IReadOnlyList<ReservedItem> Items);
-public record CmdInventoryRelease(Guid OrderId, IReadOnlyList<ReservedItem> Items);
+public record OrderCreatedData(Guid UserId, string Currency, decimal GrandTotal, IReadOnlyList<ItemData> Items );
 
+// 2) INVENTORY COMMANDS (Saga -> Inventory)
+public record CmdInventoryReserve(IReadOnlyList<ItemData> Items);
+public record CmdInventoryRelease(IReadOnlyList<ItemData> Items);
+public record CmdInventoryCommit(IReadOnlyList<ItemData> Items);
 
-// Inventory
-public record InventoryReservedData(IReadOnlyList<ReservedItem> Items);
-public record ReservedItem(Guid ProductId, int Quantity);
+// 3) INVENTORY EVENTS (Inventory -> Saga)
+public record InventoryReservedData(IReadOnlyList<ItemData> Items);
 public record InventoryFailedData(string Reason);
 
-public record CmdPaymentRequest(Guid OrderId, decimal Amount, string Currency);
-public record CmdPaymentCancel(Guid OrderId, string Reason);
-public record CmdOrderUpdateStatus(Guid OrderId, string NewStatus);
+// 4) PAYMENT COMMANDS (Saga -> Payment)
+public record CmdPaymentRequest(decimal Amount, string Currency);
+public record CmdPaymentCancel(string Reason);
 
-// OrderFailed
-public record OrderFailed(string Reason);
-public record OrderSucceeded(string Reason);
-
-
-// Payment
+// 5) PAYMENT EVENTS (Payment -> Saga)
 public record PaymentSucceededData(string Provider, string TxnRef, decimal Amount);
 public record PaymentFailedData(string Provider, string Reason);
 
-public record   OrderApprovalResult(bool Approved, string? Note = null);
+// 6) ORDER COMMANDS (Saga -> Order)
+public record CmdOrderUpdateStatus(string NewStatus);
 
-//commit
-public record CmdInventoryCommit;
+// 7) ADMIN EVENTS (Identity -> Saga)
+public record OrderApprovalResult(bool Approved, string? Note = null);

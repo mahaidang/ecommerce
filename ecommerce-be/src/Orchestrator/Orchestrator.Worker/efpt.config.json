@@ -16,6 +16,10 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[saga].[OrderSagaItems]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[saga].[OrderSagaStates]",
          "ObjectType": 0
       }

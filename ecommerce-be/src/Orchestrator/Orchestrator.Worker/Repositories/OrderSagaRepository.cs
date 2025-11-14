@@ -11,7 +11,9 @@ public class OrderSagaRepository
 
     public async Task<OrderSagaState?> GetByOrderIdAsync(Guid orderId)
     {
-        return await _db.OrderSagaStates.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        return await _db.OrderSagaStates
+                    .Include(x => x.OrderSagaItems)
+                    .FirstOrDefaultAsync(x => x.OrderId == orderId);
     }
     public async Task SaveAsync(OrderSagaState state)
     {

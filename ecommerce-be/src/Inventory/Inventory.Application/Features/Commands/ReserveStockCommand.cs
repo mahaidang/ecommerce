@@ -11,7 +11,7 @@ namespace Inventory.Application.Features.Commands;
 public record ReserveStockCommand(
     Guid OrderId, 
     string OrderNo,
-    List<ReservedItem> Items, 
+    List<ItemData> Items, 
     Guid? CorrelationId,
     string? EventType,
     DateTime? UtcNow,

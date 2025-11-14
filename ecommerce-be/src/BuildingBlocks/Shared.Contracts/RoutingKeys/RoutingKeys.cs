@@ -16,6 +16,7 @@ public static class Rk
     // commands (orchestrator -> participants)
     public const string CmdInventoryReserve = "cmd.inventory.reserve";
     public const string CmdInventoryRelease = "cmd.inventory.release";
+    public const string CmdInventoryCommit = "cmd.inventory.commit";
     public const string CmdPaymentRequest = "cmd.payment.request";
     public const string CmdPaymentCancel = "cmd.payment.cancel";
     public const string CmdOrderUpdateStatus = "cmd.order.update-status";

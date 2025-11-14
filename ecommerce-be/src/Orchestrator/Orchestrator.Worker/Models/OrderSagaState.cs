@@ -30,4 +30,6 @@ public partial class OrderSagaState
     public DateTime CreatedAtUtc { get; set; }
 
     public DateTime? UpdatedAtUtc { get; set; }
+
+    public virtual ICollection<OrderSagaItem> OrderSagaItems { get; set; } = new List<OrderSagaItem>();
 }
