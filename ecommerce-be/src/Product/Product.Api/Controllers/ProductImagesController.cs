@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Product.Application.Features.Products.Commands;
@@ -23,6 +24,7 @@ public class ProductImagesController : ControllerBase
         return Ok(res);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Upload(Guid productId, IFormFile file, [FromQuery] bool isMain, CancellationToken ct)
     {
@@ -31,6 +33,7 @@ public class ProductImagesController : ControllerBase
         return ok ? Ok() : NotFound();
     }
 
+    [Authorize]
     [HttpDelete("{publicId}")]  
     public async Task<IActionResult> Delete(Guid productId, string publicId, CancellationToken ct)
     {
@@ -38,6 +41,7 @@ public class ProductImagesController : ControllerBase
         return ok ? NoContent() : NotFound();
     }
 
+    [Authorize]
     [HttpPost("{publicId}/main")]
     public async Task<IActionResult> SetMain(Guid productId, string publicId, CancellationToken ct)
     {

@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Shared.Contracts\Shared.Contracts.csproj" />
-    <ProjectReference Include="..\..\BuildingBlocks\Shared.Persistence\Shared.Persistence.csproj" />
     <ProjectReference Include="..\Inventory.Application\Inventory.Application.csproj" />
     <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
   </ItemGroup>

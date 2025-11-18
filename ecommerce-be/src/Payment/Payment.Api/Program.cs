@@ -8,13 +8,43 @@ using Payment.Infrastructure.Consumers;
 using Payment.Infrastructure.External;
 using Payment.Infrastructure.Models;
 using Payment.Infrastructure.Repository;
+using Shared.Infrastructure.Auth;
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtConfigPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath,
+        "..", "..", "..",
+        "jwtsettings.dev.json")
+);
+builder.Configuration.AddJsonFile(jwtConfigPath, optional: false, reloadOnChange: true);
+
+builder.Services.AddAuthentication("Bearer");
+builder.Services.AddSharedAuth(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(o =>
+{
+    o.SwaggerDoc("v1", new() { Title = "Order API", Version = "v1" });
 
+    o.AddSecurityDefinition("Bearer", new()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Nhập: Bearer {token}"
+    });
+
+    o.AddSecurityRequirement(new()
+    {
+        {
+            new() { Reference = new() { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.AddDbContext<PaymentDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
@@ -80,6 +110,8 @@ app.UseSwagger(
     });
 }
 );
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.UseSwaggerUI();

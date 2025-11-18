@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Application.Features.Commands;
 using Payment.Application.Features.Dtos;
@@ -6,6 +7,7 @@ using Payment.Application.Features.Dtos;
 namespace Payment.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("webhook/sepay")]
 public class WebhookController : ControllerBase
 {

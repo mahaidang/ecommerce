@@ -13,6 +13,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtConfigPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath,
+        "..", "..", "..",
+        "jwtsettings.dev.json")
+);
+
+
+builder.Configuration.AddJsonFile(jwtConfigPath, optional: false, reloadOnChange: true);
+
 // Load 2 module chính
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

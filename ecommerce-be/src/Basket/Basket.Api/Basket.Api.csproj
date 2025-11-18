@@ -11,10 +11,11 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.9.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.6.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.9.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Shared.Infrastructure\Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Orchestrator\Orchestrator.Worker\Orchestrator.Worker.csproj" />
     <ProjectReference Include="..\Basket.Application\Basket.Application.csproj" />
     <ProjectReference Include="..\Basket.Infrastructure\Basket.Infrastructure.csproj" />

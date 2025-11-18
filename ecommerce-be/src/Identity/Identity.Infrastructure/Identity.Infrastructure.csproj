@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Shared.Abstractions\Shared.Abstractions.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Shared.Infrastructure\Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Identity.Application\Identity.Application.csproj" />
     <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Shared.Persistence\Shared.Persistence.csproj" />

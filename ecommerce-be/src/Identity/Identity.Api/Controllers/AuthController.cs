@@ -1,11 +1,11 @@
 ﻿using Identity.Api.Contracts.Auth;
-using Identity.Application.Abstractions.Security;
 using Identity.Application.Features.Commands.Auth;
 using Identity.Application.Features.Users.Queries.GetCurrentUser;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Abstractions.Auth;
 
 namespace Identity.Api.Controllers;
 
@@ -14,9 +14,9 @@ namespace Identity.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ISender _sender;
-    private readonly ICurrentUserService _currentUser;
+    private readonly ICurrentUser _currentUser;
 
-    public AuthController(ISender sender, ICurrentUserService currentUser)
+    public AuthController(ISender sender, ICurrentUser currentUser)
     {
         _sender = sender;
         _currentUser = currentUser;

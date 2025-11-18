@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Product.Api.Contracts.Category;
 using Product.Application.Abstractions.Persistence;
@@ -8,6 +9,7 @@ using Product.Application.Features.Categories.Commands.CreateCategory;
 namespace Product.Api.Controllers
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class CategoriesController : ControllerBase
     {

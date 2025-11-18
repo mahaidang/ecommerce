@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using Product.Api.Contracts.CreateProduct;
@@ -24,6 +25,7 @@ public class ProductsController : ControllerBase
         _repo = repo;
         _sender = sender;
     }
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Create(ProductCreateRequest req, CancellationToken ct)
     {
@@ -64,6 +66,7 @@ public class ProductsController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductRequest req, CancellationToken ct)
     {
@@ -86,6 +89,7 @@ public class ProductsController : ControllerBase
     }
 
     // DELETE /api/v1/products/{id}
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {

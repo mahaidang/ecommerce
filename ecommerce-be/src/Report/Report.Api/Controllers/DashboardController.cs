@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Report.Application.Features.Queries;
 
 namespace ReportService.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public class DashboardController : ControllerBase
 {
