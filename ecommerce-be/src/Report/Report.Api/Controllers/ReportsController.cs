@@ -1,9 +1,11 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ReportService.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public class ReportsController : ControllerBase
 {

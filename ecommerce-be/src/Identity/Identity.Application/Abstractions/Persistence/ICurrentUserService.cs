@@ -1,6 +1,6 @@
-﻿namespace Identity.Application.Abstractions.Security;
+﻿//namespace Identity.Application.Abstractions.Security;
 
-public interface ICurrentUserService
-{
-    Guid? UserId { get; }
-}
+//public interface ICurrentUserService
+//{
+//    Guid? UserId { get; }
+//}

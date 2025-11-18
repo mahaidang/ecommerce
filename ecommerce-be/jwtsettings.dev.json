@@ -1,0 +1,7 @@
+{
+  "Jwt": {
+    "Issuer": "ecom.identity",
+    "Audience": "ecom.clients",
+    "Key": "ecommerce-secret-key-by-mhd-1406"
+  }
+}

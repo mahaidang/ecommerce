@@ -1,11 +1,14 @@
 ﻿using Inventory.Application.Features.Commands;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[Authorize]
+
 public class InventoryController : ControllerBase
 {
     private readonly ISender _mediator;

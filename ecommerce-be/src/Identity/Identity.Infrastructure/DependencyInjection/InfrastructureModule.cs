@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Abstractions.Auth;
+using Shared.Infrastructure.Auth;
 
 namespace Identity.Infrastructure.DependencyInjection;
 
@@ -27,7 +29,7 @@ public static class InfrastructureModule
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         // ✅ MassTransit (RabbitMQ)

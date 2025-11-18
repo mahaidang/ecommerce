@@ -5,16 +5,55 @@ using Inventory.Infrastructure.Services;
 using InventoryService.Application.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Shared.Infrastructure.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
+var jwtConfigPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath,
+        "..", "..", "..",
+        "jwtsettings.dev.json")
+);
 
+
+builder.Configuration.AddJsonFile(jwtConfigPath, optional: false, reloadOnChange: true);
+
+// 2) Add Authentication (BẮT BUỘC)
+// =======================================================
+builder.Services.AddAuthentication("Bearer");
+
+// =======================================================
+// 3) Add Shared Auth (validate JWT từ Identity)
+// =======================================================
+builder.Services.AddSharedAuth(builder.Configuration);
+
+builder.Services.AddSwaggerGen(o =>
+{
+    o.SwaggerDoc("v1", new() { Title = "Order API", Version = "v1" });
+
+    o.AddSecurityDefinition("Bearer", new()
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Nhập: Bearer {token}"
+    });
+
+    o.AddSecurityRequirement(new()
+    {
+        {
+            new() { Reference = new() { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+            Array.Empty<string>()
+        }
+    });
+});
 // Load 2 module chính
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddDbContext<InventoryDbContext>(opt =>
@@ -64,7 +103,8 @@ app.UseSwagger(
 
 app.UseSwaggerUI();
 
-
+app.UseAuthentication();   // 🔥 BẮT BUỘC
+app.UseAuthorization();    // 🔥 BẮT BUỘC
 app.MapGrpcService<InventoryGrpcService>();
 app.MapControllers();
 

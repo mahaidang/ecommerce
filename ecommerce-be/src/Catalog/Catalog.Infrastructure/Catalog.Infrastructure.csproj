@@ -18,7 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
     <ProjectReference Include="..\Catalog.Domain\Catalog.Domain.csproj" />
-    <ProjectReference Include="..\..\BuildingBlocks\Shared.Persistence\Shared.Persistence.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

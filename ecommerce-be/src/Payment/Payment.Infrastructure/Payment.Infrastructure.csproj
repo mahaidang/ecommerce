@@ -4,7 +4,6 @@
     <ProjectReference Include="..\..\BuildingBlocks\Shared.Contracts\Shared.Contracts.csproj" />
     <ProjectReference Include="..\Payment.Application\Payment.Application.csproj" />
     <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />
-    <ProjectReference Include="..\..\BuildingBlocks\Shared.Persistence\Shared.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>

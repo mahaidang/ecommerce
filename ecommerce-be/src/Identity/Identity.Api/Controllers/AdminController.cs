@@ -1,11 +1,13 @@
 ﻿using Identity.Application.Features.Commands.Admin;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AdminsController : ControllerBase
     {
         private readonly IMediator _mediator;

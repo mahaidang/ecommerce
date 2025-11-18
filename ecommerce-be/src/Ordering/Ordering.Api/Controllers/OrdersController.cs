@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ordering.Application.Common;
 using Ordering.Application.Orders;
@@ -7,6 +8,7 @@ using Ordering.Application.Orders.Command;
 namespace Ordering.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public class OrdersController : ControllerBase
 {
