@@ -1,0 +1,6 @@
+.vs/ 
+bin/ 
+obj/ 
+ecommerce-fe/
+.env
+jwtsettings.dev.json
