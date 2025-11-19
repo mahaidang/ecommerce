@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ReportService.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Admin")]
 [Route("[controller]")]
 public class ReportsController : ControllerBase
 {

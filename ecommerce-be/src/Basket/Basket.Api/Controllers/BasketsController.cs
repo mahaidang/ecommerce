@@ -5,6 +5,7 @@ using Basket.Application.Features.Baskets.Dtos;
 using Basket.Application.Features.Baskets.Queries;
 using Mapster;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]

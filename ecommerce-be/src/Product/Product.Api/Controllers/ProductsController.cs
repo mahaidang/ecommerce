@@ -25,7 +25,7 @@ public class ProductsController : ControllerBase
         _repo = repo;
         _sender = sender;
     }
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Create(ProductCreateRequest req, CancellationToken ct)
     {
@@ -66,7 +66,7 @@ public class ProductsController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductRequest req, CancellationToken ct)
     {
