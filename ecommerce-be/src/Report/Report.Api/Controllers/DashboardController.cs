@@ -6,8 +6,8 @@ using Report.Application.Features.Queries;
 namespace ReportService.Api.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("[controller]")]
+[Authorize(Roles = "Admin")]
 public class DashboardController : ControllerBase
 {
     private readonly ISender _sender;

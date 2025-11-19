@@ -7,8 +7,7 @@ namespace Inventory.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize]
-
+[Authorize(Roles = "Admin")]
 public class InventoryController : ControllerBase
 {
     private readonly ISender _mediator;
