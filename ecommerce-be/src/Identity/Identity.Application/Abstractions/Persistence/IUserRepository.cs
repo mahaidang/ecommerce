@@ -8,4 +8,6 @@ public interface IUserRepository
     Task<bool> ExistsByEmailAsync(string email, CancellationToken ct);
     Task<User?> FindByIdAsync(Guid userId, CancellationToken ct);
     Task<User?> GetByUsernameOrEmailAsync(string input, CancellationToken ct);
+    Task<User?> GetByIdWithRolesAsync(Guid userId, CancellationToken ct);
+
 }

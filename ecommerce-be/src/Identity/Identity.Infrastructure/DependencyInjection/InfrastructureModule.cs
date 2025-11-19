@@ -1,5 +1,6 @@
 ﻿using Identity.Application.Abstractions;
 using Identity.Application.Abstractions.Persistence;
+using Identity.Application.Abstractions.Persistencel;
 using Identity.Application.Abstractions.Security;
 using Identity.Infrastructure.Persistence;
 using Identity.Infrastructure.Security;
@@ -31,6 +32,10 @@ public static class InfrastructureModule
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
+
 
         // ✅ MassTransit (RabbitMQ)
         services.AddMassTransit(x =>

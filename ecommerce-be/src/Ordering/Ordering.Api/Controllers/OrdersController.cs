@@ -8,7 +8,6 @@ using Ordering.Application.Orders.Command;
 namespace Ordering.Api.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("[controller]")]
 public class OrdersController : ControllerBase
 {
@@ -30,6 +29,8 @@ public class OrdersController : ControllerBase
     }
 
     // GET /api/Orders?userId=...&page=&pageSize=
+    [Authorize]
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string status = "", CancellationToken ct = default)
     {
@@ -39,6 +40,7 @@ public class OrdersController : ControllerBase
     }
 
     // GET /api/Orders/{id}
+    [Authorize(Roles="Admin")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
