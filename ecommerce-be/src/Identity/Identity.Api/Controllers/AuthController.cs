@@ -55,4 +55,28 @@ public class AuthController : ControllerBase
         var result = await _sender.Send(new GetCurrentUserQuery(_currentUser.UserId.Value), ct);
         return Ok(result.Adapt<ProfileResponse>());
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshRequest req, CancellationToken ct)
+    {
+        var result = await _sender.Send(new RefreshTokenCommand(req.RefreshToken), ct);
+        return Ok(result); // includes new access + refresh
+    }
+
+    [Authorize]
+    [HttpPost("revoke")]
+    public async Task<IActionResult> Revoke(RevokeRequest req, CancellationToken ct)
+    {
+        // optional: if no token passed, revoke all for current user
+        if (string.IsNullOrWhiteSpace(req.RefreshToken))
+        {
+            var userId = _currentUser.UserId ?? throw new UnauthorizedAccessException();
+            await _sender.Send(new RevokeAllTokensCommand(userId), ct);
+            return NoContent();
+        }
+
+        await _sender.Send(new RevokeTokenCommand(req.RefreshToken), ct);
+        return NoContent();
+    }
+
 }
