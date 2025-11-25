@@ -1,6 +1,4 @@
-version: "3.9"
-
-services:
+﻿services:
   # ========== DATABASE ==========
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -56,7 +54,12 @@ services:
     depends_on:
       - sqlserver
     environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
       - ConnectionStrings__Default=Server=sqlserver,1433;Database=IdentityDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
     networks:
       - ecommerce-net
 
@@ -70,7 +73,12 @@ services:
     depends_on:
       - mongodb
     environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
       - Mongo__ConnectionString=mongodb://root:123456@mongodb:27017
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
     networks:
       - ecommerce-net
 
@@ -85,12 +93,17 @@ services:
       - sqlserver
       - rabbitmq
     environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
       - ConnectionStrings__Default=Server=sqlserver,1433;Database=InventoryDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
       # Override cho RabbitMQ
       - RabbitMq__Host=rabbitmq
       - RabbitMq__Port=5672
       - RabbitMq__User=guest
       - RabbitMq__Pass=guest
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
     networks:
       - ecommerce-net
 
@@ -105,8 +118,13 @@ services:
       - redis
       - product
     environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
       - Redis__Host=redis
       - Product__BaseUrl=http://product:8082
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
     networks:
       - ecommerce-net
 
@@ -122,25 +140,35 @@ services:
       - rabbitmq
       - inventory
     environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
       - ConnectionStrings__Default=Server=sqlserver,1433;Database=OrderingDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
       - Grpc__InventoryBaseUrl=http://inventory:8083
       - RabbitMq__Host=rabbitmq
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
     networks:
       - ecommerce-net
 
-  # payment:
-  #   build:
-  #     context: .
-  #     dockerfile: src/Payment/Dockerfile
-  #   container_name: payment
-  #   ports:
-  #     - "8085:8085"
-  #   depends_on:
-  #     - sqlserver
-  #   environment:
-  #     - ConnectionStrings__Default=Server=sqlserver,1433;Database=PaymentDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
-  #   networks:
-  #     - ecommerce-net
+  payment:
+    build:
+      context: .
+      dockerfile: src/Payment/Dockerfile
+    container_name: payment
+    ports:
+      - "5501:8085"
+    depends_on:
+      - sqlserver
+    environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
+      - ConnectionStrings__Default=Server=sqlserver,1433;Database=PaymentDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
+    networks:
+      - ecommerce-net
 
   report:
     build:
@@ -152,7 +180,12 @@ services:
     depends_on:
       - sqlserver
     environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
       - ConnectionStrings__Default=Server=sqlserver,1433;Database=ReportDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;
+      # JWT (dùng chung, lấy từ .env)
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__Key=${JWT_KEY}
     networks:
       - ecommerce-net
 
@@ -163,6 +196,8 @@ services:
     container_name: orchestrator
     depends_on:
       - rabbitmq
+    environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
     networks:
       - ecommerce-net
 
@@ -178,9 +213,11 @@ services:
       - ordering
       - product
       - basket
-      # - payment
+      - payment
       - report
       - orchestrator
+    environment:
+      - RUNNING_IN_DOCKER=${RUNNING_IN_DOCKER}
     networks:
       - ecommerce-net
 

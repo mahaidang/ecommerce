@@ -13,14 +13,29 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtConfigPath = Path.GetFullPath(
-    Path.Combine(builder.Environment.ContentRootPath,
+var isRunningInDocker =
+    string.Equals(
+        Environment.GetEnvironmentVariable("RUNNING_IN_DOCKER"),
+        "true",
+        StringComparison.OrdinalIgnoreCase
+    );
+
+if (builder.Environment.IsDevelopment() &&
+    string.IsNullOrEmpty(builder.Configuration["Jwt:Key"]) &&
+    !isRunningInDocker)
+{
+    var jwtFilePath = Path.Combine(
+        Directory.GetCurrentDirectory(),
         "..", "..", "..",
-        "jwtsettings.dev.json")
-);
+        "jwtsettings.dev.json"
+    );
 
+    if (File.Exists(jwtFilePath))
+    {
+        builder.Configuration.AddJsonFile(jwtFilePath, optional: true, reloadOnChange: true);
+    }
+}
 
-builder.Configuration.AddJsonFile(jwtConfigPath, optional: false, reloadOnChange: true);
 
 // Load 2 module chính
 builder.Services.AddApplication();
