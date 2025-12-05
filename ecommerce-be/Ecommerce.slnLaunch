@@ -1,0 +1,52 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Name": "src\\Gateway\\Gateway.Api\\Gateway.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Identity\\Identity.Api\\Identity.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Inventory\\Inventory.Api\\Inventory.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Payment\\Payment.Api\\Payment.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Basket\\Basket.Api\\Basket.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Ordering\\Ordering.Api\\Ordering.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Orchestrator\\Orchestrator.Worker\\Orchestrator.Worker.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Report\\Report.Api\\Report.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      },
+      {
+        "Name": "src\\Product\\Product.Api\\Product.Api.csproj",
+        "Action": "Start",
+        "DebugTarget": ""
+      }
+    ]
+  }
+]

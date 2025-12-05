@@ -19,11 +19,11 @@ namespace Product.Api.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductRepository _repo;
-    private readonly ISender _sender;
-    public ProductsController(IProductRepository repo, ISender sender)
+    private readonly IMediator _mediator;
+    public ProductsController(IProductRepository repo, IMediator mediator)
     {
         _repo = repo;
-        _sender = sender;
+        _mediator = mediator;
     }
     [Authorize(Roles = "Admin")]
     [HttpPost]
@@ -31,7 +31,7 @@ public class ProductsController : ControllerBase
     {
         var dto = req.Adapt<CreateProductDto>();
         var cmd = new CreateProductCommand(dto);
-        var res = await _sender.Send(cmd, ct);
+        var res = await _mediator.Send(cmd, ct);
         return CreatedAtAction(nameof(GetById), new { id = res.Id }, res);
 
     }
@@ -39,14 +39,14 @@ public class ProductsController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken ct)
     {
-        var p = await _sender.Send(new GetProductByIdQuery(id), ct);
+        var p = await _mediator.Send(new GetProductByIdQuery(id), ct);
         return p is null ? NotFound() : Ok(p.Adapt<ProductDto>());
     }
 
     [HttpGet("{id:guid}/full")]
     public async Task<IActionResult> GetFull([FromRoute] Guid id, CancellationToken ct)
     {
-        var p = await _sender.Send(new GetFull(id), ct);
+        var p = await _mediator.Send(new GetFull(id), ct);
         return p is null ? NotFound() : Ok(p.Adapt<ProductFullDto>());
     }
 
@@ -61,7 +61,7 @@ public class ProductsController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetProductsQuery(keyword, categoryId, minPrice, maxPrice, page, pageSize), ct);
+        var result = await _mediator.Send(new GetProductsQuery(keyword, categoryId, minPrice, maxPrice, page, pageSize), ct);
 
         return Ok(result);
     }
@@ -79,7 +79,7 @@ public class ProductsController : ControllerBase
         try
         {
             var cmd = new UpdateProductCommand(dto);
-            var res = await _sender.Send(cmd, ct);
+            var res = await _mediator.Send(cmd, ct);
             return Ok(res);
         }
         catch (MongoWriteException mwe) when (mwe.WriteError.Category == ServerErrorCategory.DuplicateKey)
@@ -95,7 +95,7 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            await _sender.Send(new DeleteProductCommand(id), ct);
+            await _mediator.Send(new DeleteProductCommand(id), ct);
             return NoContent();
         }
         catch (KeyNotFoundException)

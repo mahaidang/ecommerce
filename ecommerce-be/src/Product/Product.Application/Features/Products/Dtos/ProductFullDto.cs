@@ -13,5 +13,6 @@ public record ProductFullDto(
     bool IsActive,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
-    List<ProductImageDto>? Images 
+    List<ProductImageDto>? Images,
+    long AvailableQty
 );

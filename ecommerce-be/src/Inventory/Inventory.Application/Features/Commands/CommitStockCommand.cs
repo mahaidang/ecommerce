@@ -1,4 +1,4 @@
-﻿using Inventory.Application.Interfaces;
+﻿using Inventory.Application.Abstractions.Persistence;
 using Inventory.Domain.Entities;
 using MassTransit;
 using MediatR;
