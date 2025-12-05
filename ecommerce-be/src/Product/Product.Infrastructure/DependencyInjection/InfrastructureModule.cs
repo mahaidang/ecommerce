@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using Product.Application.Abstractions.External;
 using Product.Application.Abstractions.Persistence;
 using Product.Infrastructure.Cloudinary;
+using Product.Infrastructure.Grpc;
 using Product.Infrastructure.Repositories;
 
 namespace Product.Infrastructure.DependencyInjection;
@@ -34,6 +35,14 @@ public static class InfrastructureModule
             var settings = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
             return new CloudinaryService(settings);
         });
+
+        services.AddGrpcClient<InventoryService.Grpc.InventoryService.InventoryServiceClient>(o =>
+        {
+            o.Address = new Uri(config["Grpc:InventoryUrl"]!);
+        });
+
+        services.AddScoped<IInventoryGrpcClient, InventoryGrpcClient>();
+
 
         return services;
     }

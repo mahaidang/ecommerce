@@ -1,4 +1,4 @@
-﻿using Inventory.Application.Interfaces;
+﻿using Inventory.Application.Abstractions.Persistence;
 using MassTransit;
 using MediatR;
 using Shared.Contracts.Events;

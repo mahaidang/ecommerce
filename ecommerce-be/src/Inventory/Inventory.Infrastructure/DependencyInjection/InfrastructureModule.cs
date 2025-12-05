@@ -1,6 +1,7 @@
-﻿using Inventory.Application.Interfaces;
+﻿using Inventory.Application.Abstractions.Persistence;
 using Inventory.Infrastructure.Consumers;
 using Inventory.Infrastructure.Models;
+using Inventory.Infrastructure.Persistence.Repositories;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,9 @@ public static class InfrastructureModule
         // ✅ Interface mapping
         services.AddScoped<IInventoryDbContext>(sp =>
             sp.GetRequiredService<InventoryDbContext>());
+
+        //Repo
+        services.AddScoped<IInventoryRepository, InventoryRepository>();
 
         // ✅ MassTransit (RabbitMQ)
         services.AddMassTransit(x =>

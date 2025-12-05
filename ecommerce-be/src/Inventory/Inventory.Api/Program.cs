@@ -1,8 +1,9 @@
-﻿using Inventory.Application.Interfaces;
+﻿using Inventory.Api.Grpc;
+using Inventory.Application.Abstractions.Persistence;
 using Inventory.Infrastructure.DependencyInjection;
 using Inventory.Infrastructure.Models;
-using Inventory.Infrastructure.Services;
 using InventoryService.Application.DependencyInjection;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Shared.Infrastructure.Auth;
@@ -75,6 +76,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<InventoryDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<IInventoryDbContext>(sp => sp.GetRequiredService<InventoryDbContext>());
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenLocalhost(5302, o =>
+    {
+        o.Protocols = HttpProtocols.Http2;
+    });
+});
 
 
 var app = builder.Build();

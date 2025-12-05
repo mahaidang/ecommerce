@@ -34,8 +34,4 @@
     <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Shared.Abstractions\Shared.Abstractions.csproj" />
   </ItemGroup>
-	<ItemGroup>
-		<None Include="jwtsettings.dev.json" CopyToOutputDirectory="Always" />
-	</ItemGroup>
-
 </Project>
