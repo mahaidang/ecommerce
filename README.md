@@ -54,6 +54,7 @@ Hệ thống eCommerce phân tán được xây dựng với **.NET 8**, **YARP 
 ![System Architecture](docs/architecture/system-architecture.png)
 
 ---
+<!--
 
 ## 🔌 Port Mapping
 
@@ -76,7 +77,6 @@ Hệ thống eCommerce phân tán được xây dựng với **.NET 8**, **YARP 
 ---
 
 
-<!--
 ## 🚀 Cách chạy dự án
 
 ### 1. Clone repo  
