@@ -13,7 +13,7 @@ Hệ thống eCommerce phân tán được xây dựng với **.NET 8**, **YARP 
 - Tích hợp **YARP API Gateway** để định tuyến, xác thực và bảo mật tập trung.  
 - Sử dụng **gRPC** nhằm giảm độ trễ trong giao tiếp nội bộ giữa các service.  
 - Áp dụng **Polyglot Persistence** (SQL Server, MongoDB, Redis) phù hợp với từng bài toán dữ liệu.  
-- Tăng độ ổn định và hiệu năng hệ thống, hướng tới **API response < 100ms**.  
+- Tăng độ ổn định và hiệu năng hệ thống.
 - Container hóa toàn bộ hệ thống bằng **Docker Compose**.  
 - Mô phỏng đầy đủ quy trình eCommerce: đăng nhập, giỏ hàng, kiểm kho, thanh toán, xác nhận đơn hàng.  
 - Nâng cao kỹ năng thiết kế distributed system, quản lý workflow, bảo mật API và xử lý sự kiện realtime.  
